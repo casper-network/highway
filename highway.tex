@@ -1,4 +1,3 @@
-
 \documentclass[12pt]{article}
 
 \usepackage[utf8]{inputenc}
@@ -410,14 +409,15 @@ This is the motivation for the protocol's name: The nodes have different speed p
 
 \subsection{Parameter strategy: Target Threshold for Finality}
 
-Given a family $\mathcal{F}$ of voting functions, a threshold $0\% < D < 100\%$, a \emph{break parameter} $C \in \mathbb{N}$, and an \emph{acceleration parameter} $B \in \mathbb{N}$, we choose $n_v$ as follows. Given $i$, and $m = n_v(i - 1)$, whenever $2^m$ divides $i$ and $n_v$ was constant between $i - C \cdot 2^m$ and $i - 1$:
+Given a family $\mathcal{F}$ of voting functions, a threshold $0\% < D < 100\%$, \emph{break parameters} $C_0 < C_1 \in \mathbb{N}$, and an \emph{acceleration parameter} $B \in \mathbb{N}$, we choose $n_v$ as follows. Given $i$, and $m = n_v(i - 1)$, whenever $2^m$ divides $i$ and $n_v$ was constant between $i - C_1 \cdot 2^m$ and $i - 1$:
 \begin{itemize}
-  \item If $i/2^m$ is divisible by $2$, for no $k \in \{1, \ldots, C\}$, there is an $f\in \mathcal{F}$ and a leader message $\lambda$ in tick $i - k \cdot 2^m$, such that $f$ was $\mathbb{0}$ for all messages in $J(\lambda)$, $f(\lambda) \neq \emptyset$, and $f(\lambda)$ was finalized with threshold $D$ in our local protocol state by time $i - (k - 1) 2^m$, then let $n_v(i) = m + 1$.
+  \item If $i/2^m$ is even and fewer than $C_0$ out of all $k \in \{1, \ldots, C_1\}$ succeeded, then let $n_v(i) = m + 1$, where:\\
+    A $k \in \mathbb{N}$ \emph{succeeded} if there is an $f \in \mathcal{F}$ and a leader message $\lambda$ in tick $i - k \cdot 2^m$, such that $f$ was $\mathbb{0}$ for all messages in $J(\lambda)$, $f(\lambda) \neq \emptyset$, and $f(\lambda)$ was finalized with threshold $D$ in our local protocol state by time $i - (k - 1) 2^m$.
   \item Otherwise, if $i/2^m$ is divisible by $B$, let $n_v(i) = m - 1$.
 \end{itemize}
-In other words, if $C$ consecutive leaders have failed to finalize a new value with threshold $D$, then we increase $n_v$; but every $B$ rounds, we optimistically decrease it.
+In other words, if fewer than $C_0$ out of $C_1$ consecutive leaders have successfully finalized a new value with threshold $D$, then we increase $n_v$; but every $B$ rounds, we optimistically decrease it. If both criteria apply, increasing $n_v$, i.e. slowing down, takes precedence.
 
-In practice $D$ should probably be about $1\%$: Even if in a single round, the leader's value gets finalized with only that threshold, if there are enough honest validators, its threshold will increase in the next round anyway. $C$ should be chosen so that it is rare for $C$ faulty leaders to occur in a row (resulting in an unnecessary slowdown). In particular, during $B$ rounds, the expected number of such a faulty streak must be much less than $1$, e.g. $C = 15$, $B = 1000$.
+In practice $D$ should probably be about $1\%$: Even if in a single round, the leader's value gets finalized with only that threshold, if there are enough honest validators, its threshold will increase in the next round anyway. $C_0$ and $C_1$ should be chosen so that it is rare for $C_0$ faulty leaders to occur in any sequence of $C_1$ subsequent rounds (resulting in an unnecessary slowdown). In particular, during $B$ rounds, the expected number of such a faulty streak must be much less than $1$, e.g. $C_0 = 10$, $C_1 = 40$, $B = 1000$.
 
 \begin{proposition}
   If there is a set $H$ of honest nodes of weight at least $(1/2 + D) \mathbb{w}(\mathcal{V})$, all leaders in $H$ set a first non-$\mathbb{0}$ value for some $f \in \mathcal{F}$, and there is some upper bound such that all messages between members of $H$ are eventually delivered within that bound, then eventually some value gets finalized with threshold $D$.
@@ -428,7 +428,7 @@ In practice $D$ should probably be about $1\%$: Even if in a single round, the l
 \end{proof}
 
 % \subsection{Parameter strategy: Multiple of a Percentile}
-% 
+%
 % Each validator $v$ measures the difference between incoming messages' timestamps and its local time: Let $d_{w, v}(i)$ be the delay of validator $w$'s latest message that reached $v$ by tick $i$, and $d_{v, v}(i) = 0$. Let $t_v(i)$ be $C$ times the $D$-th percentile of the values $d_{w, v} (i)$, weighted by $w$'s weight, where $C \geq 1$ and $50\% \leq D \leq 100\%$ are constants. The choice of parameters $C$ and $D$ influences the network's fault tolerance and synchrony requirements. $n_v(i) \in \mathbb{N}$ is minmial such that $2^{n_v(i)} \geq t_v(i)$, if possible, i.e. in each tick $i$, if $2^{n_v(i - 1)}$ divides $i$, then $n_v(i)$ is the greatest number such that:
 % \begin{itemize}
 %   \item $2^{n_v(i)}$ divides $i$, and
