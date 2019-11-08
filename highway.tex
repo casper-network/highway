@@ -8,7 +8,7 @@
 \usepackage{a4wide}
 \usepackage{hyperref}
 \usepackage{authblk}
-\usepackage[style=alphabetic]{biblatex}
+\usepackage{biblatex}
 
 \addbibresource{highway.bib}
 
@@ -47,15 +47,39 @@
 \tableofcontents
 \pagebreak
 
-\section*{Abstract}
 
-We present a concrete consensus algorithm based on \cite{zamfir2018casper} together with a criterion for finality, both proposed by Daniel Kane. This consensus algorithm is live in a partially synchronous network and has variable out-of-protocol finality thresholds each observer can choose independently, thus allowing individual tradeoffs between safety and liveness.
+\begin{abstract}
+We present Highway, a consensus algorithm based on CBC Casper together with a criterion for finality, both proposed by Daniel Kane. This algorithm is live in a partially synchronous network, if the participants have approximately synchronized clocks. Highway has variable out-of-protocol finality thresholds each observer can choose independently, as a tradeoff between safety and liveness.
+\end{abstract}
 
-At the heart of the protocol are two design choices that keep it simple and intuitive:
+
+\section*{Introduction}
+
+Fault tolerant protocols for state machine replication are at the heart of distributed databases, cryptocurrencies and smart contract platforms: Mechanisms that allow a network to reach consensus on the state and progress of a decentralized virtual machine, even if some of its nodes malfunction or get compromised.
+
+Classical solutions like PBFT \cite{castro1999practical} usually have a well-defined threshold for what \emph{number} of faulty nodes can be tolerated, and are meant to be used in a \emph{permissioned} context, with an immutable set of participating nodes, fixed from the beginning.
+
+Bitcoin \cite{nakamoto2008bitcoin} introduced a \emph{permissionless} Proof-of-Work consensus algorithm, where the set of participating nodes is continually changing, and anyone can join or leave at any time, and Ethereum \cite{wood2014ethereum} extended this concept from a pure cryptocurrency to a general programmable smart contract platform. Both networks have very high value and correspondingly high requirements for security, due to potentially large incentives for attackers.
+
+Proof-of-Work inherently has extremely high energy requirements \cite{de2018bitcoin}. Proof-of-Stake networks (e.g. \cite{kiayias2017ouroboros}) attempt to address this issue by giving the power to make consensus decisions not to the nodes that contribute the most computing resources, but to the ones that deposit the highest stakes as a collateral. They aspire to provide the same or higher levels of security and performance, while requiring less energy by many orders of magnitude.
+
+
+\subsection*{Our Contribution}
+
+Highway is a concrete consensus algorithm based on CBC Casper \cite{zamfir2018casper} together with a criterion for finality, both proposed by Daniel Kane. It is live in a partially synchronous network, if the participants have clocks that are synchronized up to an unknown but bounded difference.
+
+At the heart of Casper are two design choices that keep it simple and intuitive:
 \begin{itemize}
-  \item There are no targeted messages sent only to specific nodes, like e.g.  \cite{miller2016honey}, and no messages that contain a particular choice of other messages that the sender had received earlier,  \cite{castro1999practical}'s {\tt NEW-VIEW} message. Instead, all messages are eventually delivered to everyone, and they attest to earlier messages; all nodes see the same, continuously growing graph of messages, similar to \cite{baird2016hashgraph}.
-  \item Decisions are made using simple voting. Liveness is ensured by enforcing a particular structure in the graph that prevents stalemates from persisting.
+  \item There are no targeted messages sent only to specific nodes, like e.g. \cite{miller2016honey}. Instead, all messages are eventually delivered to everyone, and they attest to earlier messages; all nodes see the same, continuously growing graph of messages, similar to \cite{baird2016hashgraph,chevalier2018parsec,gkagol2019aleph,moser1999byzantine}.
+  \item Decisions are made using simple, explicit voting: You always have to follow the plurality.\footnote{This is in contrast to protocols like \cite{buchman2018latest,castro1999practical,muratov2018yac} where a leader proposes and if not enough confirmations are collected, a new leader retries with a different proposal, or e.g. \cite{kiayias2017ouroboros}, where the longest chain is always selected.} The Highway protocol ensures liveness by enforcing a particular structure in the graph that prevents stalemates from persisting.
 \end{itemize}
+
+It allows participating nodes to have different voting weights, making it suitable for Proof-of-Stake networks, where a node's weight is proportional to its stake. Moreover, Highway has variable out-of-protocol finality thresholds each observer can choose independently, thus allowing individual tradeoffs between safety and liveness.
+
+As a partially synchronous protocol, Highway is not subject to the FLP impossibility \cite{fischer1982impossibility} and does not rely on randomness for liveness.
+
+
+\subsection*{Overview}
 
 In section \ref{sectionMessages} we introduce the basic concepts of messages, justifications and equivocations, and analyze the safety guarantees that can be derived from their structure so that we can determine in a general setting when consensus decisions are final, i.e. under some reasonable assumptions they cannot be reverted.
 
@@ -64,6 +88,8 @@ Section \ref{sectionBlockchain} provides an explanation about how these results 
 In section \ref{sectionLiveness}, we introduce additional rules that guarantee not only safety, but also liveness; decisions can be relied on and are eventually actually made.
 
 Finally, section \ref{sectionPermissionless} puts the abstract consensus algorithm in the context of a distributed proof of stake network, outlines how deposits, rewards and penalties can be handled, and addresses the problem of long range attacks.
+
+\newpage
 
 
 \section{Messages and Finality}
@@ -164,13 +190,13 @@ $$w (\{\lambda \in L(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L(\mu
 I.e. whenever a strict majority of latest honest messages in $J(\mu)$ has property $p$, then $\mu$ also does.
 \end{definition}
 
-These definitions are motivated by the blockchain case where we will prove that for every block $b$, "the child $c$ of $b$ such that the message votes for (a descendant of) $c$" is plurality-driven. This will imply that if $c$ is a child of $b$, the property "the message votes for $c$" is majority-driven relative to "the message votes for $b$". See section \ref{sectionBlockchain} for details. We will examine conditions under which majority-driven properties become finalized such that all future messages have them.
+These definitions are motivated by the blockchain case where we will prove that for every block $b$, ``the child $c$ of $b$ such that the message votes for (a descendant of) $c$'' is plurality-driven. This will imply that if $c$ is a child of $b$, the property ``the message votes for $c$'' is majority-driven relative to ``the message votes for $b$''. See section \ref{sectionBlockchain} for details. We will examine conditions under which majority-driven properties become finalized such that all future messages have them.
 
 \begin{lemma}\label{leaderLemma}
   If $f: \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ is $\mathbb{w}$-plurality-driven, $f(\lambda) \neq \mathbb{0}$, $f(\mu) \neq \mathbb{0}$, and $J(\mu) = J(\lambda) \cup \{\lambda\}$, then $f(\mu) = f(\lambda)$.
 \end{lemma}
 
-We will later try to construct situations like this, where all messages directly follow some "leader" message $\lambda$. The lemma shows that in such situations, agreeing votes are enforced.
+We will later try to construct situations like this, where all messages directly follow some ``leader'' message $\lambda$. The lemma shows that in such situations, agreeing votes are enforced.
 
 \begin{proof}
   The only added message in $J(\mu)$ compared to $J(\lambda)$ is $\lambda$ itself, which is comparable to all other elements of $J(\mu)$, and hence cannot be part of an equivocation. So, $E(J(\mu)) = E(J(\lambda))$.
@@ -205,7 +231,7 @@ For integers $k > 0$, we say that a $p'$-message $\mu \in \sigma$ with $S(\mu) \
   We say that $\mathcal{S}$ is \emph{valid} if for every $k$ and every $v\in C_k$ there is a message $\mu \in \sigma$ with $S(\mu) = v$ of level at least $k$ in $\mathcal{S}$.
 \end{definition}
 
-Note that committees are allowed to be empty, and usually all but a finite number of committees will be.
+The first committee $C_0$ is a set of validators voting for $p$. Each subsequent committee $C_{k+1}$ is a set of validators who have already observed and cited a large part ($\geq q$) of the the previous committee $C_k$'s relevant messages\footnote{Multiple levels of confirmations are a recurring pattern in consensus, e.g. compare the \emph{deciding patterns} in \cite{moser1999byzantine}.}. Note that committees are allowed to be empty, and usually all but a finite number of committees will be.
 We are ready to prove that this implies a finality condition:
 
 \begin{theorem}
@@ -251,7 +277,7 @@ Thus, the validators contributing to $a,b$ and $c$ have total weight of at least
 
 Thus, once a validator has such a summit in their local protocol state $\sigma$, they know that eventually every honest validator will also see all of $\sigma$, and will only produce $p'$-messages with property $p$ from then on, unless a weight of at least $2t (1 - 2^{-k})$ validators equivocate. They can therefore consider $p$ to be \emph{finalized relative to $p'$}, with fault-tolerance threshold $2t (1 - 2^{-k})$.
 
-Note that if we have at least a $2\mathbb{w}(\mathcal{v})/3$-weight of honest validators, we could reasonably expect all of them to eventually contribute to a summit. If they persisted for enough rounds to achieve a high $k$, this would allow them to achieve a fault tolerance threshold of nearly $\mathbb{w}(\mathcal{v})/3$. Thus, ignoring liveness considerations for the moment, we could hope that our system is secure against a third of the validators being faulty. In fact, in practice we might expect to be able to obtain summits with weight close to $\mathbb{w}(\mathcal{V})$ if either there were few faulty validators at the time, or the faulty validators did not behave unusually. In this case, we might hope to obtain a fault-tolerance threshold of nearly everything.
+Note that if we have at least a $2\mathbb{w}(\mathcal{V})/3$-weight of honest validators, we could reasonably expect all of them to eventually contribute to a summit. If they persisted for enough rounds to achieve a high $k$, this would allow them to achieve a fault tolerance threshold of nearly $\mathbb{w}(\mathcal{V})/3$. Thus, ignoring liveness considerations for the moment, we could hope that our system is secure against a third of the validators being faulty. In fact, in practice we might expect to be able to obtain summits with weight close to $\mathbb{w}(\mathcal{V})$ if either there were few faulty validators at the time, or the faulty validators did not behave unusually. In this case, we might hope to obtain a fault-tolerance threshold of nearly everything.
 
 
 \subsection{Computational Efficacy of the Finality Criterion}
@@ -303,14 +329,14 @@ Every block with height $\geq k$ has a unique ancestor with height $k$:
 
 In Casper, every message represents a vote for a block: either one that was created earlier, or a new child of such a block. So there is a map $B : \mathcal{M} \rightarrow \mathcal{B} \setminus \{g\}$ that assigns to each message the block that it votes for such that $\mathrm{Prev}(B(\mu)) \in \{g\} \cup \{ B(\lambda) \mid \lambda < \mu\}$ for all $\mu \in \mathcal{M}$.
 
-If a message $\mu$ votes for a pre-existing block, i.e. if there is a $\lambda < \mu$ with $B(\lambda) = B(\mu)$, then $\mu$ is called a \emph{ballot}\footnote{Since ballots "contain" a block that is already known from one of their justifications, the block should not be sent along again, of course. In the implementation it suffices if the ballot message contains only the hash of the block that it votes for.}. Otherwise, $\mu$ is called a \emph{block message}.
+If a message $\mu$ votes for a pre-existing block, i.e. if there is a $\lambda < \mu$ with $B(\lambda) = B(\mu)$, then $\mu$ is called a \emph{ballot}\footnote{Since ballots ``contain'' a block that is already known from one of their justifications, the block should not be sent along again, of course. In the implementation it suffices if the ballot message contains only the hash of the block that it votes for.}. Otherwise, $\mu$ is called a \emph{block message}.
 
 For a block $b$, let $p_b$ be the message property defined by $p_b (\mu) \Leftrightarrow b < B(\mu)$, i.e. a message has property $p_b$ if it carries a block that is a strict descendant of $b$.
 
 
 \subsection{The GHOST Rule}
 
-The set of validators and their weights can be managed "on-chain" by a smart contract. Every block $b$ is associated with a particular validator set that corresponds to the contract's state after $b$:
+The set of validators and their weights can be managed ``on-chain'' by a smart contract. Every block $b$ is associated with a particular validator set that corresponds to the contract's state after $b$:
 
 Let $\mathbb{w}_b : \mathcal{V} \rightarrow \mathbb{R}_{\geq 0}$ assign to each block $b \in \mathcal{B}$ and validator $v \in \mathcal{V}$ a \emph{weight} $\mathbb{w}_b(v)$. A validator $v$ is called \emph{active after} $b$, if $\mathbb{w}_b(v) > 0$. We assume that after every $b$, there is at least one, but only finitely many active validators.
 
@@ -351,7 +377,7 @@ Note that the GHOST rule can be verified using only the message $\mu$ itself and
 
 \subsection{Leaders and Ticks}
 
-We measure time in milliseconds since the epoch\footnote{Unix time: number of milliseconds since the beginning of 1970, UTC}. An integer timestamp is called a \emph{tick}. We pseudorandomly assign one of the active validators $\mathcal{L}(i) \in \mathcal{V}$ to each tick\footnote{This needs to be done in a secure way; more on this and validator set changes later.} $i$ as the tick's \emph{leader}.
+We measure time in milliseconds since the epoch\footnote{Unix time: number of milliseconds since the beginning of 1970, UTC}. An integer timestamp is called a \emph{tick}. We pseudorandomly assign one of the active validators $\mathcal{L}(i) \in \mathcal{V}$ to each tick\footnote{This needs to be done in a secure way; more on this and validator set changes later.} $i$ as the tick's \emph{leader}. To keep the proofs simple, we assume that the participants have synchronized clocks. However, a difference of $\delta$ between their clocks is equivalent to adding up to $\delta$ to resp. subtracting up to $\delta$ from message delays. If a node receives a message ``from the future'', with a timestamp greater than the current local time, it keeps the message in the buffer, and only includes it into its local state once that time has arrived.
 
 We assume that messages have timestamps: $T: \mathcal{M} \rightarrow \mathbb{R}$, i.e. $T(\mu)$ is the time when message $\mu$ was sent\footnote{Millisecond resolution is sufficient here, but to keep notation simple, we assume exact timestamps.}.
 
@@ -365,7 +391,7 @@ A validator $v$ will create and gossip new messages as follows. Let $i$ be the m
 \end{itemize}
 In the first and third case, $v$ includes as justifications its full protocol state $\sigma$. In the second case, $v$ includes as justifications only $J(\lambda) \cup \{\lambda\}$ and $v$'s own previous message and its justifications.
 
-So in each round lasting $2^{n_v(i)}$ ticks, first the "round leader", i.e. the leader of the round's first tick, sends a message $\lambda$ to everyone. Other validators send a message to everyone as soon as they received the leader's message. After a fraction $R$ of the round has passed, every validator sends a message to everyone again. The intention is for the first message to confirm $\lambda$'s vote and become a level-0 message, and the second one to confirm a sufficient number of first messages, and become a level-1 message, thus forming a summit.
+So in each round lasting $2^{n_v(i)}$ ticks, first the ``round leader'', i.e. the leader of the round's first tick, sends a message $\lambda$ to everyone. Other validators send a message to everyone as soon as they received the leader's message. After a fraction $R$ of the round has passed, every validator sends a message to everyone again. The intention is for the first message to confirm $\lambda$'s vote and become a level-0 message, and the second one to confirm a sufficient number of first messages, and become a level-1 message, thus forming a summit.
 
 \begin{lemma}\label{basicLiveness}
   Let $f : \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ be plurality-driven, and $c \in \mathcal{C}$.
@@ -548,6 +574,8 @@ Nodes should indeed automatically turn blocks into checkpoints, but in addition,
   \item Subscribe to your friends checkpoint channels, and to those of some media you trust.
   \item Whenever there are any two checkpoints that are not ancestors of each other, alert the user: An exceptional fork has happened, or one of our trusted checkpoint sources has gone bad. At this point, the user needs to remove the untrusted checkpoints and subscriptions, and manually choose a fork.
 \end{itemize}
+
+\newpage
 
 \printbibliography
 
