@@ -55,7 +55,7 @@ We present Highway, a consensus algorithm based on CBC Casper together with a cr
 
 \section*{Introduction}
 
-Fault tolerant protocols for state machine replication are at the heart of distributed databases, cryptocurrencies and smart contract platforms: Mechanisms that allow a network to reach consensus on the state and progress of a decentralized virtual machine, even if some of its nodes malfunction or get compromised.
+Fault tolerant protocols for state machine replication are at the heart of distributed databases, cryptocurrencies and smart contract platforms: mechanisms that allow a network to reach consensus on the state and progress of a decentralized virtual computer, even if some of its nodes malfunction or get compromised.
 
 Classical solutions like PBFT \cite{castro1999practical} usually have a well-defined threshold for what \emph{number} of faulty nodes can be tolerated, and are meant to be used in a \emph{permissioned} context, with an immutable set of participating nodes, fixed from the beginning.
 
@@ -68,15 +68,16 @@ Proof-of-Work inherently has extremely high energy requirements \cite{de2018bitc
 
 Highway is a concrete consensus algorithm based on CBC Casper \cite{zamfir2018casper} together with a criterion for finality, both proposed by Daniel Kane. It is live in a partially synchronous network, if the participants have clocks that are synchronized up to an unknown but bounded difference.
 
-At the heart of Casper are two design choices that keep it simple and intuitive:
+At the heart of Casper we made two design choices that keep it simple and intuitive:
 \begin{itemize}
-  \item There are no targeted messages sent only to specific nodes, like e.g. \cite{miller2016honey}. Instead, all messages are eventually delivered to everyone, and they attest to earlier messages; all nodes see the same, continuously growing graph of messages, similar to \cite{baird2016hashgraph,chevalier2018parsec,gkagol2019aleph,moser1999byzantine}.
-  \item Decisions are made using simple, explicit voting: You always have to follow the plurality.\footnote{This is in contrast to protocols like \cite{buchman2018latest,castro1999practical,muratov2018yac} where a leader proposes and if not enough confirmations are collected, a new leader retries with a different proposal, or e.g. \cite{kiayias2017ouroboros}, where the longest chain is always selected.} The Highway protocol ensures liveness by enforcing a particular structure in the graph that prevents stalemates from persisting.
+  \item There are no targeted messages sent only to specific nodes, like e.g. \cite{miller2016honey}. Instead, all messages are ``broadcasted'' to all network nodes and they attest to earlier messages; all nodes see the same, continuously growing graph of messages, similar to \cite{baird2016hashgraph,chevalier2018parsec,gkagol2019aleph,moser1999byzantine}.
+  \item Decisions are made using simple, explicit voting: You always have to follow the plurality.\footnote{This is in contrast to protocols like \cite{buchman2018latest,castro1999practical,muratov2018yac} where a leader proposes and if not enough confirmations are collected, a new leader retries with a different proposal, or e.g. \cite{kiayias2017ouroboros}, where the longest chain is always selected.}
 \end{itemize}
 
+The Highway protocol ensures liveness by enforcing a particular structure in the graph that prevents stalemates from persisting.
 It allows participating nodes to have different voting weights, making it suitable for Proof-of-Stake networks, where a node's weight is proportional to its stake. Moreover, Highway has variable out-of-protocol finality thresholds each observer can choose independently, thus allowing individual tradeoffs between safety and liveness.
 
-As a partially synchronous protocol, Highway is not subject to the FLP impossibility \cite{fischer1982impossibility} and does not rely on randomness for liveness.
+As a partially synchronous protocol --- it creates messages according to a schedule that relies on real time, so it is not fully asynchronous ---, Highway is not subject to the FLP impossibility \cite{fischer1982impossibility} and does not rely on randomness for liveness.
 
 
 \subsection*{Overview}
@@ -136,7 +137,7 @@ When creating a new message $\mu$, a validator $v$ is expected to always include
 
 \begin{definition}
 A pair of messages $\mu$ and $\lambda$ is an \emph{equivocation}, if $S(\mu) = S(\lambda)$ and $\mu \not\leq \lambda$ and $\lambda \not\leq \mu$. The sender $v = S(\mu)$ is an \emph{equivocator}. For every protocol state $\sigma$, let
-$$E(\sigma) = \{v\in\mathcal{V} \mid \exists \mu, \lambda \in \mathrm{Swim}_v(\sigma)\; \mu \not\leq \lambda \wedge \lambda \not\leq \mu\}$$
+  $$E(\sigma) = \{v\in\mathcal{V} \mid \text{There exist } \mu, \lambda \in \mathrm{Swim}_v(\sigma), \text{ such that } \mu \not\leq \lambda \text{ and } \lambda \not\leq \mu\}$$
 be the set of validators who produced an equivocation that is contained in $\sigma$.
 \end{definition}
 
@@ -159,16 +160,16 @@ A central part of Casper's design,  messages count as votes for consensus values
 To capture this notion, we will consider functions $f: \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$, assigning to each message $\mu$ a value $f(\mu) \in \mathcal{C}$ that the message is voting for, or a special value $\mathbb{0} \notin \mathcal{C}$ if the message does not carry a vote, i.e. counts as an abstention. To tally the votes, we will need to look at each validator's latest non-abstention message.
 
 \begin{definition}
-The set of \emph{latest honest messages with property\footnote{Properties can be represented as a subset $p \subseteq \mathcal{M}$. We say that $p$ \emph{applies to $\mu$}, or just $p(\mu)$, if $\mu \in p$.} $p$}
-  $$L_p(\sigma) = \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \wedge p(\mu) \wedge \forall \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma)\; (\neg p(\lambda) \;\vee\; \lambda \leq \mu) \}$$
-contains the latest messages with property $p$ of all non-equivocating validators. We also call messages with property $p$ \emph{$p$-messages}.
+  The set of \emph{latest honest messages with property\footnote{Properties can be represented as a subset $p \subseteq \mathcal{M}$. We say that $p$ \emph{applies to $\mu$}, or just $p(\mu)$, if $\mu \in p$. We write $\neg p$ for "not $p$", i.e. $\neg p(\mu)$ is true if and only if $p(\mu)$ is not.} $p$}
+  $$L_p(\sigma) = \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \text{ and } p(\mu) \text{ and for all } \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma), \lambda \leq \mu \text{ or } \neg p(\lambda) \}$$
+contains the latest messages with property $p$ of all non-equivocating validators. We also call a message \emph{$p$-message} if it has property $p$.
 
   For a message $\mu$, we define $L_p(\mu) = L_p(J(\mu))$ for brevity, and we write $L$ without a subscript for the latest honest messages with the always-true property, i.e.:
-  $$L(\sigma) = \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \wedge \forall \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma)\; \lambda \leq \mu \}$$
+  $$L(\sigma) = \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \text{ and for all } \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma), \lambda \leq \mu \}$$
 Recall that non-equivocating validators' swimlanes are totally ordered, so $L(\sigma)$ contains exactly the maxima of their swimlanes.
 
   Given a voting function $f: \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ with a totally ordered set $\mathcal{C}$, let
-  $$L_f(\sigma) \;=\; \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \;\wedge\; f(\mu) \neq \mathbb{0} \;\wedge\; \forall \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma)\; (f(\lambda) = \mathbb{0} \;\vee\; \lambda \leq \mu) \}\text{,}$$
+  $$L_f(\sigma) \;=\; \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \text{ and } f(\mu) \neq \mathbb{0} \text{ and for all } \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma), f(\lambda) = \mathbb{0} \text{ or } \lambda \leq \mu \}\text{,}$$
   i.e. $L_f = L_p$ for the property $p(\mu) \Leftrightarrow f(\mu) \neq \mathbb{0}$. Let
   $$W_f(c, \sigma) \;=\; \mathbb{w}(\{ \mu \in L_f(\sigma) \mid f(\mu) = c\})$$
   for $c \in \mathcal{C}$: the total weight of the non-equivocating validators whose latest non-$\mathbb{0}$ vote was for $c$.
@@ -181,13 +182,13 @@ Recall that non-equivocating validators' swimlanes are totally ordered, so $L(\s
 In particular, if more than half of the votes (by weight) in $L_f(\mu)$ are for a value $c$, and $f(\mu) \neq \mathbb{0}$, $\mu$ must also be: $f(\mu) = c$. So if $f$ is $\mathbb{w}$-plurality-driven, the property $f(\mu) = c$ is $\mathbb{w}$-majority-driven relative to $f(\mu) \neq \mathbb{0}$, in the following sense:
 
 \begin{definition}
-A property of messages $p$ is \emph{$\mathbb{w}$-majority-driven relative to} a property $q$ if for every valid message $\mu$:
-  $$w (\{\lambda \in L_q(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L_q(\mu)) \quad \wedge \quad q(\mu) \quad \Rightarrow \quad p(\mu)$$
-  I.e. whenever $\mu$ has property $q$ and a strict majority of latest honest messages in $J(\mu)$ with property $q$ has property $p$, then $\mu$ also does.
+A property of messages $p$ is \emph{$\mathbb{w}$-majority-driven relative to} a property $q$ if every valid message $\mu$ with
+  $$w (\{\lambda \in L_q(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L_q(\mu)) \quad \text{ and } \quad q(\mu)$$
+has property $p$. I.e. whenever $\mu$ has property $q$ and a strict majority of latest honest messages in $J(\mu)$ with property $q$ has property $p$, then $\mu$ also does.
 
-$p$ is \emph{$\mathbb{w}$-majority-driven} if it is $\mathbb{w}$-majority-driven relative to the always-true property, i.e. if for every valid message $\mu$:
-$$w (\{\lambda \in L(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L(\mu)) \quad \Rightarrow \quad p(\mu)$$
-I.e. whenever a strict majority of latest honest messages in $J(\mu)$ has property $p$, then $\mu$ also does.
+$p$ is \emph{$\mathbb{w}$-majority-driven} if it is $\mathbb{w}$-majority-driven relative to the always-true property, i.e. if every valid message $\mu$ with
+$$w (\{\lambda \in L(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L(\mu))$$
+has property $p$. I.e. whenever a strict majority of latest honest messages in $J(\mu)$ has property $p$, then $\mu$ also does.
 \end{definition}
 
 These definitions are motivated by the blockchain case where we will prove that for every block $b$, ``the child $c$ of $b$ such that the message votes for (a descendant of) $c$'' is plurality-driven. This will imply that if $c$ is a child of $b$, the property ``the message votes for $c$'' is majority-driven relative to ``the message votes for $b$''. See section \ref{sectionBlockchain} for details. We will examine conditions under which majority-driven properties become finalized such that all future messages have them.
@@ -249,7 +250,7 @@ We proceed by induction on $k$. We note that the $k=0$ case follows trivially, a
 
 We will attempt to show that a set of members of $C_1$ of total weight at least $2t(1-2^{-k})$ must have equivocated.
 
-  We note that as $\nu$ is level at least $k$, there is a set $V\subseteq C_k$ of validators of total weight at least $\mathbb{w}(\mathcal{V})/2+t$ where for every $v\in V$, $\nu$ sees a message by $v$ of level at least $k-1$ in $\sigma$. All of these $p'$-messages have property $p$. Normally, a set of $p'$-messages of total weight more than $\mathbb{w}(\mathcal{V})/2$ would force $\mu$ to vote for $p$, since $p$ is $\mathbb{w}$-majority-driven relative to $p'$. However, some of these validators might be seen by $\mu$ as either equivocating or changing their vote. Let $a = \mathbb{w}(E(J(\mu)) \cap V)$ be the sum of the weights of validators in $V$ that $\mu$ sees equivocate. Let $b = \mathbb{w}(\{\kappa \in L_{p'}(\mu) \mid S(\kappa) \in V \wedge \neg p(\kappa)\}$ be the total weight of the validators in $V$ who do not have equivocations cited by $\mu$ but whose latest $p'$-message cited by $\mu$ does not have property $p$. In order for $\mu$ not to be forced to have $p$ by the majority-driven rule, it must be the case that $\mathbb{w}(\mathcal{V})/2+t-a-b \leq (\mathbb{w}(\mathcal{V})-a)/2$, or equivalently, $a+2b \geq 2t$.
+  We note that as $\nu$ is level at least $k$, there is a set $V\subseteq C_k$ of validators of total weight at least $\mathbb{w}(\mathcal{V})/2+t$ where for every $v\in V$, $\nu$ sees a message by $v$ of level at least $k-1$ in $\sigma$. All of these $p'$-messages have property $p$. Normally, a set of $p'$-messages of total weight more than $\mathbb{w}(\mathcal{V})/2$ would force $\mu$ to vote for $p$, since $p$ is $\mathbb{w}$-majority-driven relative to $p'$. However, some of these validators might be seen by $\mu$ as either equivocating or changing their vote. Let $a = \mathbb{w}(E(J(\mu)) \cap V)$ be the sum of the weights of validators in $V$ that $\mu$ sees equivocate. Let $b = \mathbb{w}(\{\kappa \in L_{p'}(\mu) \mid S(\kappa) \in V \text{ and } \neg p(\kappa)\}$ be the total weight of the validators in $V$ who do not have equivocations cited by $\mu$ but whose latest $p'$-message cited by $\mu$ does not have property $p$. In order for $\mu$ not to be forced to have $p$ by the majority-driven rule, it must be the case that $\mathbb{w}(\mathcal{V})/2+t-a-b \leq (\mathbb{w}(\mathcal{V})-a)/2$, or equivalently, $a+2b \geq 2t$.
 
   We note that if $b=0$, we are already done as in this case $a\geq 2t$. Thus, we may assume that $b > 0$. This means that there is some $\xi \in L_{p'}(\mu)$ with $S(\xi) \in V$ and $\neg p(\xi)$. Since $\xi$ is the most recent $p'$-message, it must see a message of level at least $k - 1$ by $S(\xi)$.
 
@@ -404,7 +405,7 @@ So in each round lasting $2^{n_v(i)}$ ticks, first the ``round leader'', i.e. th
   \begin{enumerate}
     \item Every message $\mu$ with $S(\mu) \in H$ and $T(\mu) = j - (1 - R) \cdot 2^{n_{S(\mu)}(j - 1)}$ reaches $l$ by tick $j$.
     \item The unique message $\lambda$ with $S(\lambda) = l$ and $T(\lambda) = j$ reaches every $v \in H$ by time $j + R' 2^{n_{\min}}$.
-    \item For every $v \in H$, every message $\mu$ with $S(\mu) \in H$ and $j \leq T(\mu) \leq j + R' \cdot 2^{n_v}(j)$ reaches $v$ by time $j + R \cdot 2^{n_v(j)}$.
+    \item For every $v \in H$, every message $\mu$ with $S(\mu) \in H$ and $j \leq T(\mu) \leq j + R' \cdot 2^{n_v(j)}$ reaches $v$ by time $j + R \cdot 2^{n_v(j)}$.
     \item $f(\mu) \neq \mathbb{0}$ for every $\mu \geq \lambda$ with $\mu \in H$.
   \end{enumerate}
   Then after tick $j + R \cdot 2^{n_{\max}}$, there is a level-1 summit with $q = \mathbb{w}(H)$ consisting of all members of $H$, finalizing the value $c = f(\lambda)$ relative to $f \neq \mathbb{0}$.
