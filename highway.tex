@@ -264,7 +264,7 @@ Thus, none of the members of $W$ contribute to $b$.
 
 Let $c$ be the weight of validators in $C_1$ which have equivocations in $\sigma \cup J(\mu)$ who do not contribute to $a$ or $b$ but have a $p'$-message $\epsilon\in J(\mu)$ coming after some level-at-least-0 message of $\sigma$ with $\neg p(\epsilon)$. 
 
-Note that in the above, validators in the first case contribute to $a$, and validators in the second contribute to $c$. 
+Note that in the above, validators in the first case contribute to $a$, and validators in the second contribute to $c$.
 
 Therefore, we have that $a+c\geq 2t(1-2^{-k+1}).$ Combining this with $a+2b\geq 2t$, we have that
 $$
@@ -373,6 +373,10 @@ Note that the GHOST rule can be verified using only the message $\mu$ itself and
 
 \section{Liveness}
 \label{sectionLiveness}
+
+We analyzed how to detect finality, and how to apply that to the case of a blockchain. However, we have not specified any rules yet for when to produce messages at all, so it is not clear that new blocks get finalized, or even produced.
+
+In this section, we present such a set of rules, and the conditions under which they guarantee liveness.
 
 
 \subsection{Leaders and Ticks}
