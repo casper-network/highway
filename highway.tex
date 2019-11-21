@@ -386,35 +386,37 @@ We measure time in milliseconds since the epoch\footnote{Unix time: number of mi
 
 We assume that messages have timestamps: $T: \mathcal{M} \rightarrow \mathbb{R}$, i.e. $T(\mu)$ is the time when message $\mu$ was sent\footnote{Millisecond resolution is sufficient here, but to keep notation simple, we assume exact timestamps.}.
 
-Each validator $v$ maintains a private parameter $n_v(i) \in \mathbb{N}$ that is updated periodically. $n_v: \mathbb{N} \rightarrow \mathbb{N}$ maps each tick number to the parameter value. We will give strategies to select $n_v$ below, but we always assume that $n_v (i) = n_v (i - 1)$ unless $i$ is a multiple of both $2^{n_v(i)}$ and $2^{n_v(i-1)}$. In other words, we assume that the parameters are kept constant for time windows of $2^{n_v(i)}$ ticks, from $j$ to $j + 2^{n_v(i)} - 1$, where $j \leq i$ is maximal such that it divides $2^{n_v(i)}$. Furthermore, we fix a parameter\footnote{A good choice is probably $R = 2/3$, but this should be determined experimentally.} $0 < R < 1$.
+Each validator $v$ maintains a private parameter $n_v(i) \in \mathbb{N}$ that is updated periodically. $n_v: \mathbb{N} \rightarrow \mathbb{N}$ maps each tick number to the parameter value. We will give strategies to select $n_v$ below, but we always assume that $n_v (i) = n_v (i - 1)$ unless $i$ is a multiple of both $2^{n_v(i)}$ and $2^{n_v(i-1)}$. In other words, we assume that the parameters are kept constant for time windows of $2^{n_v(i)}$ ticks, from $j$ to $j + 2^{n_v(i)} - 1$, where $j \leq i$ is maximal such that it divides $2^{n_v(i)}$. Furthermore, there are parameters $0 < R_0 \leq R_1 < 1$.
 
 A validator $v$ will create and gossip new messages as follows. Let $i$ be the most recent tick, and $j$ the most recent tick divisible by $2^{n_v(i)}$. $v$ creates a message:
 \begin{itemize}
     \item at time $j$ if $v$ is the leader of $j$,
     \item if $v$ is not $j$'s leader, as soon as it receives the tick-$j$-message $\lambda$ from $j$'s leader, and
-    \item unconditionally at time $j + R \cdot 2^{n_v(i)}$.
+    \item unconditionally at some point in time between $j + R_0 \cdot 2^{n_v(i)}$ and $j + R_1 \cdot 2^{n_v(i)}$.
 \end{itemize}
 In the first and third case, $v$ includes as justifications its full protocol state $\sigma$. In the second case, $v$ includes as justifications only $J(\lambda) \cup \{\lambda\}$ and $v$'s own previous message and its justifications.
 
-So in each round lasting $2^{n_v(i)}$ ticks, first the ``round leader'', i.e. the leader of the round's first tick, sends a message $\lambda$ to everyone. Other validators send a message to everyone as soon as they received the leader's message. After a fraction $R$ of the round has passed, every validator sends a message to everyone again. The intention is for the first message to confirm $\lambda$'s vote and become a level-0 message, and the second one to confirm a sufficient number of first messages, and become a level-1 message, thus forming a summit.
+So in each round lasting $2^n$ ticks, first the ``round leader'' $l$, i.e. the leader of the round's first tick, sends a message $\lambda$ to everyone. Other validators $v$ send a message $\mu^0_v$ to everyone as soon as they received $\lambda$. After a fraction $R_0$ and before $R_1$ of the round has passed, every validator $v$ sends a message $\mu^1_v$ to everyone again. The intention is for the first message $\mu^0_v$ to confirm $\lambda$'s vote and become a level-0 message, and the second one $\mu^1_v$ to confirm a sufficient number of level-0 messages, and become a level-1 message, thus forming a summit. Validators whose $n_v(i)$ is not equal to $n$ do not participate in the round in this exact way; however, as we will demonstrate below, they can still contribute to the summit.
+
+A reasonable choice for $R_0$ and $R_1$ is $2/3$, but this should be determined experimentally and optimized for performance, together with a concrete sending time $R_0 \leq t \leq R_1$ for each validator. The liveness proof below works with any choice, and for small numbers $N$ of validators $R_0 = R_1$ is fine. The problem is that for large $N$, each level-1 message will explicitly cite every level-0 message, so the total size of those messages will be proportional to $N^2$. If instead the validators send their messages sequentially between $R_0$ and $R_1$, then only the first one has to cite the level-0 messages, and the other ones can cite a single level-1 message, reducing the overhead to a linear one, proportional to $N$.
 
 \begin{lemma}\label{basicLiveness}
   Let $f : \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ be plurality-driven, and $c \in \mathcal{C}$.
 
-  Let $H \subseteq \mathcal{V}$ be a set of honest validators with $\mathbb{w}(H) > \mathbb{w}(\mathcal{V}) / 2$, and let $j$ be a tick that is divisible by $2^{n_{\max}}$, where $n_{\max} = \max_{v \in H} n_v(j)$. Let $n_{\min} = \min_{v \in H} n_v(j)$. Assume that $j$'s leader $l$ is in $H$, and that there is an $R' < R$ such that:
+  Let $H \subseteq \mathcal{V}$ be a set of honest validators with $\mathbb{w}(H) > \mathbb{w}(\mathcal{V}) / 2$, and let $j$ be a tick that is divisible by $2^{n_{\max}}$, where $n_{\max} = \max_{v \in H} n_v(j)$. Let $n_{\min} = \min_{v \in H} n_v(j)$. Assume that $j$'s leader $l$ is in $H$, and that there is an $R' < R_0$ such that:
   \begin{enumerate}
-    \item Every message $\mu$ with $S(\mu) \in H$ and $T(\mu) = j - (1 - R) \cdot 2^{n_{S(\mu)}(j - 1)}$ reaches $l$ by tick $j$.
+    \item Every message $\mu$ with $S(\mu) \in H$ and $T(\mu) \leq j - (1 - R_1) \cdot 2^{n_{S(\mu)}(j - 1)}$ reaches $l$ by tick $j$.
     \item The unique message $\lambda$ with $S(\lambda) = l$ and $T(\lambda) = j$ reaches every $v \in H$ by time $j + R' 2^{n_{\min}}$.
-    \item For every $v \in H$, every message $\mu$ with $S(\mu) \in H$ and $j \leq T(\mu) \leq j + R' \cdot 2^{n_v(j)}$ reaches $v$ by time $j + R \cdot 2^{n_v(j)}$.
+    \item For every $v \in H$, every message $\mu$ with $S(\mu) \in H$ and $j \leq T(\mu) \leq j + R' \cdot 2^{n_v(j)}$ reaches $v$ by time $j + R_0 \cdot 2^{n_v(j)}$.
     \item $f(\mu) \neq \mathbb{0}$ for every $\mu \geq \lambda$ with $\mu \in H$.
   \end{enumerate}
-  Then after tick $j + R \cdot 2^{n_{\max}}$, there is a level-1 summit with $q = \mathbb{w}(H)$ consisting of all members of $H$, finalizing the value $c = f(\lambda)$ relative to $f \neq \mathbb{0}$.
+  Then after tick $j + R_1 \cdot 2^{n_{\max}}$, there is a level-1 summit with $q = \mathbb{w}(H)$ consisting of all members of $H$, finalizing the value $c = f(\lambda)$ relative to $f \neq \mathbb{0}$.
 \end{lemma}
 
 \begin{proof}
   Every $v \in H \setminus \{l\}$ receives $\lambda$ before $j + R' \cdot 2^{n_{\min}} \leq j + R' \cdot 2^{n_v(j)}$, so the first message $\mu^0_v$ that $v$ sends after tick $j$ has $J(\mu^0_v) = J(\lambda) \cup \{ \lambda \} \cup J(\mu') \cup \{ \mu' \}$, where $\mu'$ is $v$'s previous message.
 
-  Since $\mu'$ was sent at $j - (1 - R) \cdot 2^{n_v(j - 1)}$, it reached $\lambda$ by tick $j$, so $\mu' < \lambda$ and therefore $J(\mu^0_v) = J(\lambda) \cup \{ \lambda \}$. By Lemma \ref{leaderLemma}, this implies that $f(\mu^0_v) = c$.
+  Since $\mu'$ was sent no later than $j - (1 - R_1) \cdot 2^{n_v(j - 1)}$, it reached $l$ by tick $j$, so $\mu' < \lambda$ and therefore $J(\mu^0_v) = J(\lambda) \cup \{ \lambda \}$. By Lemma \ref{leaderLemma}, this implies that $f(\mu^0_v) = c$.
 
   For $l$ itself, we define $\mu^0_l = \lambda$, so $f(\mu^0_l) = c$ is also true.
 
