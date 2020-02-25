@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[12pt, fleqn]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -38,6 +38,8 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{corollary}{Corollary}
 \newtheorem{definition}{Definition}
+
+\newcommand{\ww}{\mathbb{w}}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 
@@ -114,9 +116,9 @@ In theory, this approach could be implemented by including all previous messages
   A finite set $\sigma \subseteq \mathcal{M}$ is called a \emph{protocol state} if it is closed under $J$, i.e. if $J(\mu) \subseteq \sigma$ for every $\mu \in \sigma$. We denote the set of all protocol states as $\Sigma_{\mathcal{M}}$, or just $\Sigma$, if $\mathcal{M}$ is clear from the context.
 \end{definition}
 
-The relation $<$ is a well-founded\footnote{i.e. every nonempty set has a minimal element. This is true because for every message $\mu$, the set $\{ \lambda \mid \lambda < \mu \} = J(\mu)$ is finite, so there are no infinite descending sequences.} strict partial order\footnote{It is irreflexive because $\mu \notin J(\mu)$ and transitive because $J(\mu) \subseteq J(\lambda)$ whenever $\mu < \lambda$.} on $\mathcal{M}$. We use the usual notation for partial orders, e.g. $\mu \leq \lambda$ means $\mu \in J(\lambda) \cup \{\lambda\}$. We also say $\lambda$ \emph{sees} $\mu$ if $\mu \leq \lambda$.
+The relation $<$ is a well-founded\footnote{i.e. every nonempty set has a minimal element. This is true because for every message $\mu$, the set $\{ \lambda \mid \lambda < \mu \} = J(\mu)$ is finite, so there are no infinite descending sequences.} strict partial order\footnote{It is irreflexive because $\mu \notin J(\mu)$ and transitive because $J(\mu) \subseteq J(\lambda)$ whenever $\mu < \lambda$.} on $\mathcal{M}$. We use the usual notation for partial orders, e.g. $\mu \leq \lambda$ means $\mu \in J(\mu) \cup \{\mu\}$. We also say $\lambda$ \emph{sees} $\mu$ if $\mu \leq \lambda$.
 
-Note that $J(\mu)$ and $J(\mu) \cup \{\mu\}$ are protocol states for every message $\mu$.
+Note that $J(\mu)$ and $\bar{J}(\mu) = J(\mu) \cup \{\mu\}$ are protocol states for every message $\mu$.
 
 In a network, every node maintains its own current protocol state that includes all messages it sent and received so far — with the exception of messages $\mu$ for which some justification $\lambda \in J(\mu)$ has not yet been received. Those are kept in a temporary storage while the node requests $\lambda$ from its peers. That means a node's protocol state is monotonically increasing; if it has state $\sigma$ before it has state $\tau$, then $\sigma \subseteq \tau$.
 
@@ -143,16 +145,18 @@ be the set of validators who produced an equivocation that is contained in $\sig
 
 Since honest nodes will eventually exchange all messages they know of, any equivocation will eventually become known to all honest nodes. And, if $\sigma \subseteq \tau$, then $E(\sigma) \subseteq E(\tau)$.
 
+We write $\nu \sqsubset \mu$ if $\nu < \mu$ and $S(\nu) = S(\mu)$.
+
 
 \subsection{Votes and Weights}
 
 The protocol will support a changing set of active validators with different weights, but we will study this aspect later. For now, we consider a fixed map:
 
 \begin{definition}
-  A \emph{validator map} is a map $\mathbb{w}: \mathcal{V} \rightarrow \mathbb{R}_{\geq 0}$, assigning to each validator $v \in \mathcal{V}$ a \emph{weight} $\mathbb{w}(v)$, such that at least one, but only finitely many validators are assigned a positive weight\footnote{To simplify the notation, instead of changing the set $\mathcal{V}$ itself, we will only change the map $w$, and assign $0$ to all validators who are not currently active. So, conceptually $\mathcal{V}$ is the set of all \emph{potential} validators and can even be infinite. In an implementation, $w$ should be represented as the finite map containing only the non-zero entries.}.
+  A \emph{validator map} is a map $\ww: \mathcal{V} \rightarrow \mathbb{R}_{\geq 0}$, assigning to each validator $v \in \mathcal{V}$ a \emph{weight} $\ww(v)$, such that at least one, but only finitely many validators are assigned a positive weight\footnote{To simplify the notation, instead of changing the set $\mathcal{V}$ itself, we will only change the map $w$, and assign $0$ to all validators who are not currently active. So, conceptually $\mathcal{V}$ is the set of all \emph{potential} validators and can even be infinite. In an implementation, $w$ should be represented as the finite map containing only the non-zero entries.}.
 
-  The \emph{weight} of a subset $V \subseteq \mathcal{V}$ of validators is the sum of its members' weights: $\mathbb{w}(V) = \sum_{v \in V} \mathbb{w}(v)$, and the \emph{weight} of a set of messages $X \subseteq \mathcal{M}$ is the sum of the weight of their senders (counting each sender only once, even if they have multiple messages):
-  $$\mathbb{w}(X) = \mathbb{w}(S(X)) \;\text{, where } S(X) = \{ S(\mu) \mid \mu \in X\}$$
+  The \emph{weight} of a subset $V \subseteq \mathcal{V}$ of validators is the sum of its members' weights: $\ww(V) = \sum_{v \in V} \ww(v)$, and the \emph{weight} of a set of messages $X \subseteq \mathcal{M}$ is the sum of the weight of their senders (counting each sender only once, even if they have multiple messages):
+  $$\ww(X) = \ww(S(X)) \;\text{, where } S(X) = \{ S(\mu) \mid \mu \in X\}$$
 \end{definition}
 
 A central part of Casper's design,  messages count as votes for consensus values, and validators are required to follow the plurality of the non-equivocating validators' latest votes. However, in practice every message will count as a vote for several different things simultaneously. Specifically, in the case of blockchain a message containing a block is always also a vote for all of that block's ancestors.
@@ -171,30 +175,30 @@ Recall that non-equivocating validators' swimlanes are totally ordered, so $L(\s
   Given a voting function $f: \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ with a totally ordered set $\mathcal{C}$, let
   $$L_f(\sigma) \;=\; \{ \mu \in \sigma \mid S(\mu) \notin E(\sigma) \text{ and } f(\mu) \neq \mathbb{0} \text{ and for all } \lambda \in \mathrm{Swim}_{S(\mu)}(\sigma), f(\lambda) = \mathbb{0} \text{ or } \lambda \leq \mu \}\text{,}$$
   i.e. $L_f = L_p$ for the property $p(\mu) \Leftrightarrow f(\mu) \neq \mathbb{0}$. Let
-  $$W_f(c, \sigma) \;=\; \mathbb{w}(\{ \mu \in L_f(\sigma) \mid f(\mu) = c\})$$
+  $$W_f(c, \sigma) \;=\; \ww(\{ \mu \in L_f(\sigma) \mid f(\mu) = c\})$$
   for $c \in \mathcal{C}$: the total weight of the non-equivocating validators whose latest non-$\mathbb{0}$ vote was for $c$.
 
-  $f$ is \emph{$\mathbb{w}$-plurality-driven} if for every message $\mu \in \mathcal{M}$ with $f(\mu) \neq \mathbb{0}$:
+  $f$ is \emph{$\ww$-plurality-driven} if for every message $\mu \in \mathcal{M}$ with $f(\mu) \neq \mathbb{0}$:
   $$f(\mu) \;=\; \min \left(\argmax_{c \in \mathcal{C}} W_f(c, J(\mu))\right)$$
-  In words: $f$ is $\mathbb{w}$-plurality-driven, if $f(\mu)$ is always the value $c \in \mathcal{C}$ which the highest total weight of non-equivocating validators voted for in their latest non-$\mathbb{0}$ messages, using the total order on $\mathcal{C}$ as a tie-breaker.
+  In words: $f$ is $\ww$-plurality-driven, if $f(\mu)$ is always the value $c \in \mathcal{C}$ which the highest total weight of non-equivocating validators voted for in their latest non-$\mathbb{0}$ messages, using the total order on $\mathcal{C}$ as a tie-breaker.
 \end{definition}
 
-In particular, if more than half of the votes (by weight) in $L_f(\mu)$ are for a value $c$, and $f(\mu) \neq \mathbb{0}$, $\mu$ must also be: $f(\mu) = c$. So if $f$ is $\mathbb{w}$-plurality-driven, the property $f(\mu) = c$ is $\mathbb{w}$-majority-driven relative to $f(\mu) \neq \mathbb{0}$, in the following sense:
+In particular, if more than half of the votes (by weight) in $L_f(\mu)$ are for a value $c$, and $f(\mu) \neq \mathbb{0}$, $\mu$ must also be: $f(\mu) = c$. So if $f$ is $\ww$-plurality-driven, the property $f(\mu) = c$ is $\ww$-majority-driven relative to $f(\mu) \neq \mathbb{0}$, in the following sense:
 
 \begin{definition}
-A property of messages $p$ is \emph{$\mathbb{w}$-majority-driven relative to} a property $q$ if every valid message $\mu$ with
-  $$w (\{\lambda \in L_q(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L_q(\mu)) \quad \text{ and } \quad q(\mu)$$
+A property of messages $p$ is \emph{$\ww$-majority-driven relative to} a property $q$ if every valid message $\mu$ with
+  $$\ww (\{\lambda \in L_q(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \ww(L_q(\mu)) \quad \text{ and } \quad q(\mu)$$
 has property $p$. I.e. whenever $\mu$ has property $q$ and a strict majority of latest honest messages in $J(\mu)$ with property $q$ has property $p$, then $\mu$ also does.
 
-$p$ is \emph{$\mathbb{w}$-majority-driven} if it is $\mathbb{w}$-majority-driven relative to the always-true property, i.e. if every valid message $\mu$ with
-$$w (\{\lambda \in L(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L(\mu))$$
+$p$ is \emph{$\ww$-majority-driven} if it is $\ww$-majority-driven relative to the always-true property, i.e. if every valid message $\mu$ with
+$$\ww (\{\lambda \in L(\mu) \mid p(\lambda) \}) \;>\; \frac{1}{2} \ww(L(\mu))$$
 has property $p$. I.e. whenever a strict majority of latest honest messages in $J(\mu)$ has property $p$, then $\mu$ also does.
 \end{definition}
 
 These definitions are motivated by the blockchain case where we will prove that for every block $b$, ``the child $c$ of $b$ such that the message votes for (a descendant of) $c$'' is plurality-driven. This will imply that if $c$ is a child of $b$, the property ``the message votes for $c$'' is majority-driven relative to ``the message votes for $b$''. See section \ref{sectionBlockchain} for details. We will examine conditions under which majority-driven properties become finalized such that all future messages have them.
 
 \begin{lemma}\label{leaderLemma}
-  If $f: \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ is $\mathbb{w}$-plurality-driven, $f(\lambda) \neq \mathbb{0}$, $f(\mu) \neq \mathbb{0}$, and $J(\mu) = J(\lambda) \cup \{\lambda\}$, then $f(\mu) = f(\lambda)$.
+If $f: \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ is $\ww$-plurality-driven, $f(\lambda) \neq \mathbb{0}$, $f(\mu) \neq \mathbb{0}$, and $J(\mu) = \bar{J}(\lambda)$, then $f(\mu) = f(\lambda)$.
 \end{lemma}
 
 We will later try to construct situations like this, where all messages directly follow some ``leader'' message $\lambda$. The lemma shows that in such situations, agreeing votes are enforced.
@@ -202,7 +206,7 @@ We will later try to construct situations like this, where all messages directly
 \begin{proof}
   The only added message in $J(\mu)$ compared to $J(\lambda)$ is $\lambda$ itself, which is comparable to all other elements of $J(\mu)$, and hence cannot be part of an equivocation. So, $E(J(\mu)) = E(J(\lambda))$.
 
-  If $S(\lambda) \in E(J(\lambda))$, then $L_f (J(\mu)) = L_f (J(\lambda))$, otherwise $L_f(J(\mu)) = L_f(J(\lambda)) \cup \{\lambda\} \setminus X$, where $X$ is the set containing $S(\lambda)$'s most recent non-$\mathbb{0}$ message in $J(\lambda)$, or $\emptyset$ if there is none.
+  If $S(\lambda) \in E(J(\lambda))$, then $L_f (J(\mu)) = L_f (J(\lambda))$, otherwise $L_f(J(\mu)) = L_f(\bar{J}(\lambda)) \setminus X$, where $X$ is the set containing $S(\lambda)$'s most recent non-$\mathbb{0}$ message in $J(\lambda)$, or $\emptyset$ if there is none.
 
   So all that changed in $L_f(J(\mu))$ compared to $L_f(J(\lambda))$ is that possibly a vote for $f(\lambda)$ was added, and if so, possibly a vote with the same weight for some $c\in \mathcal{C}$ was removed. Thus $W_f(f(\lambda), J(\mu)) \geq W_f(f(\lambda), J(\lambda))$, and $W_f(c, J(\mu)) \leq W_f(c, J(\lambda))$ for all other $c \neq f(\lambda)$.
 
@@ -212,73 +216,102 @@ We will later try to construct situations like this, where all messages directly
 
 \subsection{Summits}
 
+Throughout this section, $p$ and $p'$ will be fixed but arbitrary properties, and $q = \ww(\mathcal{V})/2 + t$ with $t > 0$.
+
 \begin{definition}
-A \emph{summit} $\mathcal{S}=((C_i)_{i \in \mathbb{N}}, \sigma, p, p', q)$ is a collection of the following data:
+A \emph{$(p, p')$-summit with quorum $q$} is a sequence of sets $C_0 \supseteq C_1 \supseteq C_2 \supseteq \ldots$ such that:
 \begin{itemize}
-  \item A descending sequence of sets of validators $\mathcal{V} \supseteq C_0 \supseteq C_1 \supseteq C_2 \supseteq \ldots $ called \emph{committees}.
-\item A protocol state $\sigma$ containing no equivocation by a member of $C_0$, i.e. $C_0 \cap E(\sigma) = \emptyset$.
-\item A property $p$ that is $\mathbb{w}$-majority-driven relative to $p'$.
-\item A quorum size $q > 0$.
+  \item $\mu_0, \mu_2 \in C_i$ implies $\mu_1 \in C_i$, for all $p'$-messages $\mu_0 \sqsubset \mu_1 \sqsubset \mu_2$,
+  \item $p(\mu)$ and $p'(\mu)$ for all $\mu \in C_0$,
+  \item $E(\mu) \cap S(C_0) = \emptyset$ for all $\mu \in C_0$, and
+  \item $\ww(\bar{J}(\mu) \cap C'_i ) \geq q$ for all $\mu \in C_{i + 1}$,
 \end{itemize}
+where $C'_i = \{\nu \in C_i \mid \nu \sqsubseteq \nu' \text{ for some } \nu' \in C_{i + 1})\}$.
 
-  Given a summit $\mathcal{S}$ and a $p'$-message $\mu \in \sigma$ with $S(\mu) \in C_0$, we say that $\mu$ is of \emph{level at least $0$ in $\mathcal{S}$} if $p(\lambda)$ for every $p'$-message $\lambda \in \mathrm{Swim}_{S(\mu)}(\sigma)$ with $\lambda \geq \mu$, i.e. if $\mu$ itself has property $p$ and every later $p'$-message in $\sigma$ by the same validator also does.
-
-For integers $k > 0$, we say that a $p'$-message $\mu \in \sigma$ with $S(\mu) \in C_k$ is of \emph{level at least $k$ in $\mathcal{S}$} if and only if $\mu$ is level at least $0$ in $\mathcal{S}$ and there is a subset $V\subseteq C_k$ so that:
-\begin{itemize}
-  \item For each $v\in V$ there is a $\lambda \leq \mu$ with $S(\lambda) = v$ of level at least $k-1$ in $\mathcal{S}$.
-\item The sum of the weights of the validators in $V$ is at least $q$, i.e. $\mathbb{w}(V) \geq q$.
-\end{itemize}
-
-  We say that $\mathcal{S}$ is \emph{valid} if for every $k$ and every $v\in C_k$ there is a message $\mu \in \sigma$ with $S(\mu) = v$ of level at least $k$ in $\mathcal{S}$.
+The summit \emph{has level $k$} if $C_k \neq \emptyset$.
 \end{definition}
 
-The first committee $C_0$ is a set of validators voting for $p$. Each subsequent committee $C_{k+1}$ is a set of validators who have already observed and cited a large part ($\geq q$) of the the previous committee $C_k$'s relevant messages\footnote{Multiple levels of confirmations are a recurring pattern in consensus, e.g. compare the \emph{deciding patterns} in \cite{moser1999byzantine}.}. Note that committees are allowed to be empty, and usually all but a finite number of committees will be.
-We are ready to prove that this implies a finality condition:
+So a summit represents uninterrupted streaks of $p'$-messages voting for $p$ by honest (so far) validators --- those are the first three points. Each \emph{committee} $S(C_{i+1})$ is a group of validators, each of which has confirmed that a quorum ($\geq q$) of the committee is in $S(C_i)$.
+
+We will omit $p$, $p'$ and $q$ whenever they are clear from the context.
+
+\begin{lemma}\label{SummitLemma}
+Assume $p$ is $\ww$-majority-driven relative to $p'$. Let $(C_0, C_1, \ldots)$ be a summit, $l > 0$, $\mu$ a $<$-minimal $p'$-message with $\neg p(\mu)$ and $J(\mu) \cap C_k \neq \emptyset$. Let
+$$B_k(\mu) = \{S(\zeta) \mid \text{ $\zeta < \mu$, $p'(\zeta)$, $\neg p(\zeta)$, and there exists $C'_{k-1} \ni \nu' \sqsubset \zeta$ but no $C_k \ni \nu \sqsubset \zeta$.}\}$$
+be the set of validators that voted against $p$ after sending a $C'_{k-1}$ message. Then:
+$$\ww(B_k(\mu) \setminus E(\mu)) + \frac{1}{2} \ww(E(\mu)) \;\geq\; t$$
+\end{lemma}
+
+The intuition behind this is that a $\lambda \in J(\mu) \cap C_k$ saw a majority of $q = \ww(\mathcal{V})/2 + t$ for $p$, but $\mu$ does not see such a majority anymore.
+This can happen because $t$ of those validators (by weight) changed their vote away from $p$.
+It can also happen because $s$ validators equivocate:
+Those don't count as voting for $p$ anymore, but they also don't count as voters at all, so anything greater than $(\ww(\mathcal{V}) - s)/2$ would still be a majority.
+That's why only $s = 2t$ equivocators could bring down the votes for $p$ below the new majority threshold $\ww(\mathcal{V}) / 2 - t$.
+Of course the reason can also be a combination of equivocations and changed votes.
+
+\begin{proof}
+Since $\neg p(\mu)$, $p$ cannot have the majority in $L_{p'}(\mu)$, i.e.:
+\begin{flalign*}
+\ww(\{ \nu \in L_{p'} (\mu) \mid p(\nu) \}) &\leq \frac{1}{2} \ww(L_{p'}(\mu)) \leq \frac{1}{2} \ww(\mathcal{V}) - \frac{1}{2} \ww(E(\mu))
+\end{flalign*}
+On the other hand, if $\lambda \in J(\mu) \cap C_k$, $\ww(\bar{J}(\lambda) \cap C'_{k-1}) \geq \frac{1}{2} \ww(\mathcal{V}) + t$, and every validator in $S(\bar{J}(\lambda) \cap C'_{k-1})$ who does not count as a vote for $p$ in $\mu$ must either have equivocated or produced a vote $\zeta$ against $p$ after their message in $C'_{k-1}$. In the latter case, if $\zeta$ could see $S(\zeta)$'s $C_k$ message, $\mu$ wouldn't be minimal; thus such an $S(\zeta)$ would be in $B_k(\mu)$:
+\begin{flalign*}
+\ww(\{ \nu \in L_{p'} (\mu) \mid p(\nu) \}) & \geq \ww(S(\bar{J}(\lambda) \cap C'_{k-1}) \setminus E(\mu) \setminus B_k(\mu)) &\\
+& \geq \ww(\bar{J}(\lambda) \cap C'_{k-1}) - \ww(E(\mu) \cup B_k(\mu)) &\\
+& \geq \frac{1}{2} \ww(\mathcal{V}) + t - \ww(E(\mu)) -\ww(B_k(\mu) \setminus E(\mu)))&
+\end{flalign*}
+Together, these prove the inequality.
+\end{proof}
 
 \begin{theorem}
-  Suppose that there is a valid summit $\mathcal{S}=((C_i)_{i \in \mathbb{N}}, \sigma, p, p', q)$ with $q=\mathbb{w}(\mathcal{V})/2+t$ for some $t>0$. Then, if there is a $p'$-message $\mu$ with $\neg p(\mu)$ that sees a message of level at least $k$ of $\mathcal{S}$, the sum of the weights of members of $C_1$ who equivocate must be at least $2t(1-2^{-k})$. In fact, there is a subset of $C_1$ of weight $2t(1 - 2^{-k})$, each of whose members is
-  \begin{enumerate}
-    \item \label{seen-equivocation} in $E(J(\mu))$,
-    \item \label{contradictory-equivocation} or in $E(\sigma \cup J(\mu))$ and has a message $\epsilon \in L_{p'}(J(\mu))$ coming after a level-at-least-0 message from $\sigma$ with $\neg p(\epsilon)$.
-  \end{enumerate}
+Assume $p$ is $\ww$-majority-driven relative to $p'$. Let $(C_0, C_1, \ldots)$ be a summit, $\mu$ a $p'$-message with $\neg p(\mu)$ and $J(\mu) \cap C_k \neq \emptyset$. Let
+\begin{flalign*}
+B_l(\mu) &= \{S(\zeta) \mid \text{ $\zeta < \mu$, $p'(\zeta)$, $\neg p(\zeta)$, and there exists $C'_{l-1} \ni \nu' \sqsubset \zeta$ but no $C_l \ni \nu \sqsubset \zeta$.}\}\\
+A_l(\mu) &= B_l(\mu) \setminus E(\mu)\text{,}
+\end{flalign*}
+so $A_l(\mu)$ is the set of validators that $\mu$ sees voting against $p$ shortly after sending a $C'_{l-1}$ message, but not equivocating. $B_k(\mu)$ is as in Lemma \ref{SummitLemma}. Then:
+$$\ww(E(\mu)) + \sum_{l=1}^k \ww(A_l(\mu)) \;\geq\; 2t(1 - 2^{-k})$$
+In particular, at least $2t(1 - 2^{-k})$ validators (by weight) equivocated in any protocol state that contains both $C_0$ and $\mu$.
 \end{theorem}
 
 \begin{proof}
-We proceed by induction on $k$. We note that the $k=0$ case follows trivially, as it is always the case that a set of validators of $C_1$ of total weight at least $2t(1-2^{-0})=0$ have equivocated.
+If $\ww(E(\mu)) \geq 2t$, the inequality holds. So assume $\ww(E(\mu)) < 2t$.
+If $k = 0$, the right side is $0$, so the inequality is true.
+Assume now that $k > 0$ and that the theorem holds for $k - 1$.
 
-  We assume that our theorem statement holds for $k-1$. Suppose that there is some $p'$-message $\mu$ with $\neg p(\mu)$ that sees a message $\nu$ in $\sigma$ of level at least $k$. Then we may assume that we have a minimal\footnote{I.e. if there is a $p'$-message $\mu' < \mu$ with $\neg p(\mu')$ that also sees a message $\nu'$ in $\sigma$ of level $k$, then we replace $\mu$ with $\mu'$ and $\nu$ with $\nu'$. Note that since $J(\mu)\supseteq J(\mu')$ that $E(J(\mu))\supseteq E(J(\mu'))$ and that any validator with an equivocation in $\sigma\cup J(\mu')$ has one in $\sigma\cup J(\mu)$, and the existence of an $\epsilon$ as in \ref{contradictory-equivocation} holds as well.} such $\mu$. In particular, we assume that no $p'$-message in $J(\mu)$ with $\neg p(\mu)$ sees a message in $\sigma$ of level at least $k$.
+Note that all the $A_l(\mu)$ are disjoint:
+If a validator $v$ is in both $B_l(\mu)$ and $B_m(\mu)$ with $m > l$,
+then $\mu$ can see both a $\zeta$ that cannot see any $C_l$-message by $v$,
+and a $\nu' \in C'_{k-1} \subseteq C_l$,
+with $S(\zeta) = S(\nu') = v$.
+But $\zeta \not< \nu'$, because then $\zeta$ would be between two $p$-messages in $C_0$ and thus also a $p$-message.
+And $\nu' \not< \zeta$, because $\zeta$ cannot see any $C_l$-message by $v$.
+Hence $v \in E(\mu)$.
 
-We will attempt to show that a set of members of $C_1$ of total weight at least $2t(1-2^{-k})$ must have equivocated.
+For every $p'$-message $\mu' < \mu$,
+$E(\mu') \subseteq E(\mu)$ and each validator in any $A_l(\mu')$ is either in $A_l(\mu)$ or in $E(\mu) \setminus E(\mu')$.
+So $E(\mu') \cup \bigcup_{l=1}^k A_l(\mu') \subseteq E(\mu) \cup \bigcup_{l=1}^k A_l(\mu)$,
+and hence if the theorem holds true for $\mu'$, it also holds for $\mu$.
+So assume that $\mu$ is $<$-minimal with $\neg p(\mu)$ and $J(\mu) \cap C_k \neq \emptyset$.
+Then Lemma \ref{SummitLemma} says:
+$$\ww(A_k(\mu)) + \frac{1}{2} \ww(E(\mu)) \;\geq\; t$$
+We assumed $\ww(E(\mu)) < 2t$, so $A_k(\mu) \neq \emptyset$, and there is a message $\zeta$ as in the definition of $B_k(\mu)$.
+The induction hypothesis applies to $\zeta$:
+$$\ww(E(\zeta)) + \sum_{l=1}^{k-1} \ww(A_l(\zeta)) \;\geq\; 2t(1 - 2^{1-k})$$
+Since each element of $A_l(\zeta)$ is either in $A_l(\mu)$ or $E(\mu) \setminus E(\zeta)$:
+\begin{flalign*}
+\ww(E(\mu)) + \sum_{l=1}^k \ww(A_l(\mu)) &= \left(\ww(A_k(\mu)) + \frac{1}{2} \ww(E(\mu))\right) + \frac{1}{2} \ww(E(\mu)) + \sum_{l=1}^{k-1} \ww(A_l(\mu)) \\
+&\geq t + \frac{1}{2}\left(\ww(E(\mu)) + \sum_{l=1}^{k-1} \ww(A_l(\mu))\right) \\
+&\geq t + \frac{1}{2} \left(\ww(E(\zeta)) + \sum_{l=1}^{k-1} \ww(A_l(\zeta))\right) \\
+&\geq t + t(1 - 2^{1-k}) = 2t(1 - 2^{-k})
+\end{flalign*}
 
-  We note that as $\nu$ is level at least $k$, there is a set $V\subseteq C_k$ of validators of total weight at least $\mathbb{w}(\mathcal{V})/2+t$ where for every $v\in V$, $\nu$ sees a message by $v$ of level at least $k-1$ in $\sigma$. All of these $p'$-messages have property $p$. Normally, a set of $p'$-messages of total weight more than $\mathbb{w}(\mathcal{V})/2$ would force $\mu$ to vote for $p$, since $p$ is $\mathbb{w}$-majority-driven relative to $p'$. However, some of these validators might be seen by $\mu$ as either equivocating or changing their vote. Let $a = \mathbb{w}(E(J(\mu)) \cap V)$ be the sum of the weights of validators in $V$ that $\mu$ sees equivocate. Let $b = \mathbb{w}(\{\kappa \in L_{p'}(\mu) \mid S(\kappa) \in V \text{ and } \neg p(\kappa)\}$ be the total weight of the validators in $V$ who do not have equivocations cited by $\mu$ but whose latest $p'$-message cited by $\mu$ does not have property $p$. In order for $\mu$ not to be forced to have $p$ by the majority-driven rule, it must be the case that $\mathbb{w}(\mathcal{V})/2+t-a-b \leq (\mathbb{w}(\mathcal{V})-a)/2$, or equivalently, $a+2b \geq 2t$.
-
-  We note that if $b=0$, we are already done as in this case $a\geq 2t$. Thus, we may assume that $b > 0$. This means that there is some $\xi \in L_{p'}(\mu)$ with $S(\xi) \in V$ and $\neg p(\xi)$. Since $\xi$ is the most recent $p'$-message, it must see a message of level at least $k - 1$ by $S(\xi)$.
-
-  Let $\kappa$ be a \emph{minimal} $p'$-message in $J(\mu)$ with $S(\kappa) \in V \setminus E(J(\mu))$ and $\neg p(\kappa)$ that sees a message of level at least $k - 1$ by $S(\kappa)$.
-
-  $\kappa$ cites a message of level at least $k-1$ but $\neg p(\kappa)$, so the inductive hypothesis implies that there is a set $W \subseteq C_1$ of validators of weight $\mathbb{w}(W) \geq 2t(1-2^{-k+1})$, each of which has one of the following properties:
-  \begin{itemize}
-    \item It is in $E(J(\kappa))$. Then, it is also in $E(J(\mu))$, since $\kappa \leq \mu$.
-    \item It has a $p'$-message $\epsilon \in L_{p'}(J(\kappa))$ with $\neg p(\epsilon)$ coming after a level-at-least-0 message of $\sigma$. By the minimality of $\kappa$, $\epsilon$ cannot cite a level $k-1$ message. Thus, if $S(\epsilon)$ sent a message $\epsilon'$ citing a level $k-1$ message, $\epsilon$ and $\epsilon'$ would be an equivocation. And, if $\mu$ sees both, this would cause $\epsilon$ to contribute to $a$.
-  \end{itemize}
-Thus, none of the members of $W$ contribute to $b$.
-
-Let $c$ be the weight of validators in $C_1$ which have equivocations in $\sigma \cup J(\mu)$ who do not contribute to $a$ or $b$ but have a $p'$-message $\epsilon\in J(\mu)$ coming after some level-at-least-0 message of $\sigma$ with $\neg p(\epsilon)$. 
-
-Note that in the above, validators in the first case contribute to $a$, and validators in the second contribute to $c$.
-
-Therefore, we have that $a+c\geq 2t(1-2^{-k+1}).$ Combining this with $a+2b\geq 2t$, we have that
-$$
-a+b+c \geq (2a+2b+c)/2 \geq (a+2b)/2+(a+c)/2 \geq 2t/2 + 2t(1-2^{-k+1})/2 = 2t(1-2^{-k})\text{.}
-$$
-The validators contributing to $a$, $b$ and $c$ are clearly disjoint. Those contributing to $a$ have equivocations in $J(\mu)$ and thus satisfy \ref{seen-equivocation}. Those contributing to $c$ have equivocations and $p'$-messages that are post-level-at-least-0 and contradict $p$, thus satisfying \ref{contradictory-equivocation}. For those contributing to $b$, we note that by the minimality of $\mu$, their vote for $\neg p$ could not have contained in its justification a message of level at least $k$, even the first message $\zeta$ of level at least $k$ that this validator must have cast. However, since this is their most recent $p'$-message it must be an equivocation against $\zeta$. Therefore, this equivocation would be contained in $\sigma \cup J(\mu)$. Furthermore, these validators will have cast post-level-0 $p'$-messages that contradict $p$, and hence they satisfy \ref{contradictory-equivocation}.
-
-Thus, the validators contributing to $a,b$ and $c$ have total weight of at least $2t(1-2^{-k})$, and all satisfy either \ref{seen-equivocation} or \ref{contradictory-equivocation}.
+Finally, note that every validator in every $A_l(\mu)$ equivocated: The message $\zeta$ in the definition does not see $S(\zeta)$'s message $\zeta'$ in $C_l$, and $\zeta'$ does not see $\zeta$ because there is no vote \emph{against} $p$ between any two votes \emph{for} $p$ in $C_{l-1}$ (first point in the summit definition).
 \end{proof}
 
 Thus, once a validator has such a summit in their local protocol state $\sigma$, they know that eventually every honest validator will also see all of $\sigma$, and will only produce $p'$-messages with property $p$ from then on, unless a weight of at least $2t (1 - 2^{-k})$ validators equivocate. They can therefore consider $p$ to be \emph{finalized relative to $p'$}, with fault-tolerance threshold $2t (1 - 2^{-k})$.
 
-Note that if we have at least a $2\mathbb{w}(\mathcal{V})/3$-weight of honest validators, we could reasonably expect all of them to eventually contribute to a summit. If they persisted for enough rounds to achieve a high $k$, this would allow them to achieve a fault tolerance threshold of nearly $\mathbb{w}(\mathcal{V})/3$. Thus, ignoring liveness considerations for the moment, we could hope that our system is secure against a third of the validators being faulty. In fact, in practice we might expect to be able to obtain summits with weight close to $\mathbb{w}(\mathcal{V})$ if either there were few faulty validators at the time, or the faulty validators did not behave unusually. In this case, we might hope to obtain a fault-tolerance threshold of nearly everything.
+Note that if we have at least a $2\ww(\mathcal{V})/3$-weight of honest validators, we could reasonably expect all of them to eventually contribute to a summit. If they persisted for enough rounds to achieve a high $k$, this would allow them to achieve a fault tolerance threshold of nearly $\ww(\mathcal{V})/3$. Thus, ignoring liveness considerations for the moment, we could hope that our system is secure against a third of the validators being faulty. In fact, in practice we might expect to be able to obtain summits with weight close to $\ww(\mathcal{V})$ if either there were few faulty validators at the time, or the faulty validators did not behave unusually. In this case, we might hope to obtain a fault-tolerance threshold of nearly everything.
 
 
 \subsection{Computational Efficacy of the Finality Criterion}
@@ -298,7 +331,7 @@ Note that if we have at least a $2\mathbb{w}(\mathcal{V})/3$-weight of honest va
 
   For $k = 0$, we let $C_0$ be the set of all validators $v \notin E(\sigma)$ whose latest $p'$-message has property $p$. Since every validator in $\tilde{C}_0$ must have at least one level $\geq 0$ message, it is clear that $\tilde{C}_0 \subseteq C_0$.
 
-  Now assume we have constructed $C_0, \ldots, C_k$ so that they define a valid maximal summit up to $k$. Let $D_0 = C_k$, and $D_{i + 1}$ the set of all $v \in D_i$ such that there is a $p'$-message $\mu \in \sigma$ with $S(\mu) = v$ and $\mathbb{w}(\{\lambda \leq \mu \mid S(\lambda) \in D_i \text{and $\lambda$ is level $k$}\}) \geq q$. Then since $D_0 \supseteq D_1 \supseteq \ldots$, there is an $i$ with $D_i = D_{i+1}$, and we set $C_{k + 1} = D_i$.
+  Now assume we have constructed $C_0, \ldots, C_k$ so that they define a valid maximal summit up to $k$. Let $D_0 = C_k$, and $D_{i + 1}$ the set of all $v \in D_i$ such that there is a $p'$-message $\mu \in \sigma$ with $S(\mu) = v$ and $\ww(\{\lambda \leq \mu \mid S(\lambda) \in D_i \text{and $\lambda$ is level $k$}\}) \geq q$. Then since $D_0 \supseteq D_1 \supseteq \ldots$, there is an $i$ with $D_i = D_{i+1}$, and we set $C_{k + 1} = D_i$.
 
   We prove by induction on $i$ that $\tilde{C}_{k + 1} \subseteq D_i$. For $i = 0$ this is clear since we must have $\tilde{C}_{k + 1} \subseteq \tilde{C}_k \subseteq C_k = D_0$. For $i > 0$, assume $\tilde{C}_{k + 1} \subseteq D_{i - 1}$. Every $v \in \tilde{C}_{k + 1}$ has a $p'$-message of level $k + 1$, i.e. one that sees a set of level $k$ messages of weight $\geq q$ by members of $\tilde{C}_{k + 1} \subseteq D_{i - 1}$. Thus $v \in D_i$. This completes the inductive step and shows that $\tilde{C}_{k + 1} \subseteq D_i$ for all $i$, and thus $\tilde{C}_{k + 1} \subseteq C_{k + 1}$.
 
@@ -339,7 +372,7 @@ For a block $b$, let $p_b$ be the message property defined by $p_b (\mu) \Leftri
 
 The set of validators and their weights can be managed ``on-chain'' by a smart contract. Every block $b$ is associated with a particular validator set that corresponds to the contract's state after $b$:
 
-Let $\mathbb{w}_b : \mathcal{V} \rightarrow \mathbb{R}_{\geq 0}$ assign to each block $b \in \mathcal{B}$ and validator $v \in \mathcal{V}$ a \emph{weight} $\mathbb{w}_b(v)$. A validator $v$ is called \emph{active after} $b$, if $\mathbb{w}_b(v) > 0$. We assume that after every $b$, there is at least one, but only finitely many active validators.
+Let $\ww_b : \mathcal{V} \rightarrow \mathbb{R}_{\geq 0}$ assign to each block $b \in \mathcal{B}$ and validator $v \in \mathcal{V}$ a \emph{weight} $\ww_b(v)$. A validator $v$ is called \emph{active after} $b$, if $\ww_b(v) > 0$. We assume that after every $b$, there is at least one, but only finitely many active validators.
 
 For theoretical purposes, assume that the $\mathrm{Hash} : \mathcal{B} \rightarrow \mathbb{N}$ function is injective, i.e. there are no hash collisions.
 
@@ -347,28 +380,28 @@ The GHOST rule is the requirement that for every message $\mu \in \mathcal{M}$, 
 \begin{itemize}
     \item $a$ is a maximal element of $\{g\} \cup \{ B(\mu) \mid \mu \in \sigma\}$.
     \item For every $k < H(a)$,
-      $$A_{k + 1}(a) = \min \left(\argmax_{c\in\mathcal{B}} \mathbb{w}_b(\{\mu \in L_{p_b} (\sigma) \mid c = A_{k + 1}(B(\mu))\})\right)\textrm{,}$$
+      $$A_{k + 1}(a) = \min \left(\argmax_{c\in\mathcal{B}} \ww_b(\{\mu \in L_{p_b} (\sigma) \mid c = A_{k + 1}(B(\mu))\})\right)\textrm{,}$$
       where $b = A_k(a)$ and the minimum is taken with respect to the block hash.
 \end{itemize}
-In other words, the GHOST choice of $\sigma$ is the block that is reached by starting from $b = g$, and recursively replacing $b$ with the child $c$ of $b$ with maximal $\mathbb{w}_{b} (\{\mu \in L_{p_b}(\sigma) \mid c \leq B(\mu) \})$, using the block hash as a tie-breaker. The rule says that your message must vote for a block $b$ that is either the GHOST choice itself, or its child.
+In other words, the GHOST choice of $\sigma$ is the block that is reached by starting from $b = g$, and recursively replacing $b$ with the child $c$ of $b$ with maximal $\ww_{b} (\{\mu \in L_{p_b}(\sigma) \mid c \leq B(\mu) \})$, using the block hash as a tie-breaker. The rule says that your message must vote for a block $b$ that is either the GHOST choice itself, or its child.
 
 Note that the GHOST rule can be verified using only the message $\mu$ itself and its justifications, but no other messages (which although they may exist, we don't need to use). Messages violating the rule can be detected before a node would insert them into its protocol state; they can simply be treated as invalid and discarded.
 
 \begin{proposition}\label{ghostPlurality}
   Assume that the GHOST rule holds for all messages in $\mathcal{M}$. Given a block $c$ with height $k + 1$ and parent $b = \mathrm{Prev}(c)$:
   \begin{enumerate}
-    \item The property $q(\mu) \Leftrightarrow c \leq B(\mu)$ is $\mathbb{w}_b$-majority-driven relative to $p_b$.
-    \item The function $f : \mathcal{M} \rightarrow \mathcal{B}$, defined as follows, is $\mathbb{w}_b$-plurality-driven (where as a tie-breaker, blocks are ordered by hash):
+    \item The property $q(\mu) \Leftrightarrow c \leq B(\mu)$ is $\ww_b$-majority-driven relative to $p_b$.
+    \item The function $f : \mathcal{M} \rightarrow \mathcal{B}$, defined as follows, is $\ww_b$-plurality-driven (where as a tie-breaker, blocks are ordered by hash):
       $f(\mu) = A_{k+1}(B(\mu))$ if $b < B(\mu)$, otherwise $f(\mu) = \mathbb{0}$.
   \end{enumerate}
 \end{proposition}
 
 \begin{proof}
-  For point 1, assume that $w (\{\lambda \in L_{p_b}(\mu) \mid q(\lambda) \}) \;>\; \frac{1}{2} \mathbb{w}(L_{p_b}(\mu))$ and $p_b(\mu)$. In particular $b < B(\mu)$, so $A_{k + 1} (B(\mu)) \neq \mathbb{0}$. The GHOST rule implies that
-  $$A_{k + 1}(B(\mu)) = \min \left(\argmax_{c'\in\mathcal{B}} \mathbb{w}_b(\{\mu \in L_{p_b} (\sigma) \mid c' = A_{k + 1}(B(\mu))\})\right)\textrm{,}$$
+  For point 1, assume that $\ww (\{\lambda \in L_{p_b}(\mu) \mid q(\lambda) \}) \;>\; \frac{1}{2} \ww(L_{p_b}(\mu))$ and $p_b(\mu)$. In particular $b < B(\mu)$, so $A_{k + 1} (B(\mu)) \neq \mathbb{0}$. The GHOST rule implies that
+  $$A_{k + 1}(B(\mu)) = \min \left(\argmax_{c'\in\mathcal{B}} \ww_b(\{\mu \in L_{p_b} (\sigma) \mid c' = A_{k + 1}(B(\mu))\})\right)\textrm{,}$$
   and the only element in that $\argmax$ can be $c$. So $A_{k + 1}(B(\mu)) = c$ and thus $q(\mu)$.
 
-  For point 2, assume $f(\mu) \neq \mathbb{0}$, i.e. $b < B(\mu)$. Since $f(\mu) = A_{k+1}(B(\mu))$, the second GHOST rule point implies that $f(\mu)$ is the block $c$ with the minimal hash which maximizes $\mathbb{w}_b(\{\lambda \in L_{p_b} (J(\mu)) \mid c = A_{k + 1}(B(\lambda))\})$. But $L_{p_b} = L_f$ and for $\lambda \in L_f (J(\mu))$, $c = A_{k+1}(B(\lambda))$ is equivalent to $f(\lambda) = c$. So $f(\mu)$ actually maximizes $W_f(c, J(\mu))$. Hence $f$ is $\mathbb{w}_b$-plurality-driven.
+  For point 2, assume $f(\mu) \neq \mathbb{0}$, i.e. $b < B(\mu)$. Since $f(\mu) = A_{k+1}(B(\mu))$, the second GHOST rule point implies that $f(\mu)$ is the block $c$ with the minimal hash which maximizes $\ww_b(\{\lambda \in L_{p_b} (J(\mu)) \mid c = A_{k + 1}(B(\lambda))\})$. But $L_{p_b} = L_f$ and for $\lambda \in L_f (J(\mu))$, $c = A_{k+1}(B(\lambda))$ is equivalent to $f(\lambda) = c$. So $f(\mu)$ actually maximizes $W_f(c, J(\mu))$. Hence $f$ is $\ww_b$-plurality-driven.
 \end{proof}
 
 
@@ -394,7 +427,7 @@ A validator $v$ will create and gossip new messages as follows. Let $i$ be the m
     \item if $v$ is not $j$'s leader, as soon as it receives the tick-$j$-message $\lambda$ from $j$'s leader, and
     \item unconditionally at some point in time between $j + R_0 \cdot 2^{n_v(i)}$ and $j + R_1 \cdot 2^{n_v(i)}$.
 \end{itemize}
-In the first and third case, $v$ includes as justifications its full protocol state $\sigma$. In the second case, $v$ includes as justifications only $J(\lambda) \cup \{\lambda\}$ and $v$'s own previous message and its justifications.
+In the first and third case, $v$ includes as justifications its full protocol state $\sigma$. In the second case, $v$ includes as justifications only $\bar{J}(\lambda)$ and $v$'s own previous message and its justifications.
 
 So in each round lasting $2^n$ ticks, first the ``round leader'' $l$, i.e. the leader of the round's first tick, sends a message $\lambda$ to everyone. Other validators $v$ send a message $\mu^0_v$ to everyone as soon as they received $\lambda$. After a fraction $R_0$ and before $R_1$ of the round has passed, every validator $v$ sends a message $\mu^1_v$ to everyone again. The intention is for the first message $\mu^0_v$ to confirm $\lambda$'s vote and become a level-0 message, and the second one $\mu^1_v$ to confirm a sufficient number of level-0 messages, and become a level-1 message, thus forming a summit. Validators whose $n_v(i)$ is not equal to $n$ do not participate in the round in this exact way; however, as we will demonstrate below, they can still contribute to the summit.
 
@@ -403,20 +436,20 @@ A reasonable choice for $R_0$ and $R_1$ is $2/3$, but this should be determined 
 \begin{lemma}\label{basicLiveness}
   Let $f : \mathcal{M} \rightarrow \mathcal{C} \cup \{ \mathbb{0} \}$ be plurality-driven, and $c \in \mathcal{C}$.
 
-  Let $H \subseteq \mathcal{V}$ be a set of honest validators with $\mathbb{w}(H) > \mathbb{w}(\mathcal{V}) / 2$, and let $j$ be a tick that is divisible by $2^{n_{\max}}$, where $n_{\max} = \max_{v \in H} n_v(j)$. Let $n_{\min} = \min_{v \in H} n_v(j)$. Assume that $j$'s leader $l$ is in $H$, and that there is an $R' < R_0$ such that:
+  Let $H \subseteq \mathcal{V}$ be a set of honest validators with $\ww(H) > \ww(\mathcal{V}) / 2$, and let $j$ be a tick that is divisible by $2^{n_{\max}}$, where $n_{\max} = \max_{v \in H} n_v(j)$. Let $n_{\min} = \min_{v \in H} n_v(j)$. Assume that $j$'s leader $l$ is in $H$, and that there is an $R' < R_0$ such that:
   \begin{enumerate}
     \item Every message $\mu$ with $S(\mu) \in H$ and $T(\mu) \leq j - (1 - R_1) \cdot 2^{n_{S(\mu)}(j - 1)}$ reaches $l$ by tick $j$.
     \item The unique message $\lambda$ with $S(\lambda) = l$ and $T(\lambda) = j$ reaches every $v \in H$ by time $j + R' 2^{n_{\min}}$.
     \item For every $v \in H$, every message $\mu$ with $S(\mu) \in H$ and $j \leq T(\mu) \leq j + R' \cdot 2^{n_v(j)}$ reaches $v$ by time $j + R_0 \cdot 2^{n_v(j)}$.
     \item $f(\mu) \neq \mathbb{0}$ for every $\mu \geq \lambda$ with $\mu \in H$.
   \end{enumerate}
-  Then after tick $j + R_1 \cdot 2^{n_{\max}}$, there is a level-1 summit with $q = \mathbb{w}(H)$ consisting of all members of $H$, finalizing the value $c = f(\lambda)$ relative to $f \neq \mathbb{0}$.
+  Then after tick $j + R_1 \cdot 2^{n_{\max}}$, there is a level-1 summit with $q = \ww(H)$ consisting of all members of $H$, finalizing the value $c = f(\lambda)$ relative to $f \neq \mathbb{0}$.
 \end{lemma}
 
 \begin{proof}
-  Every $v \in H \setminus \{l\}$ receives $\lambda$ before $j + R' \cdot 2^{n_{\min}} \leq j + R' \cdot 2^{n_v(j)}$, so the first message $\mu^0_v$ that $v$ sends after tick $j$ has $J(\mu^0_v) = J(\lambda) \cup \{ \lambda \} \cup J(\mu') \cup \{ \mu' \}$, where $\mu'$ is $v$'s previous message.
+  Every $v \in H \setminus \{l\}$ receives $\lambda$ before $j + R' \cdot 2^{n_{\min}} \leq j + R' \cdot 2^{n_v(j)}$, so the first message $\mu^0_v$ that $v$ sends after tick $j$ has $J(\mu^0_v) = \bar{J}(\lambda) \cup \bar{J}(\mu')$, where $\mu'$ is $v$'s previous message.
 
-  Since $\mu'$ was sent no later than $j - (1 - R_1) \cdot 2^{n_v(j - 1)}$, it reached $l$ by tick $j$, so $\mu' < \lambda$ and therefore $J(\mu^0_v) = J(\lambda) \cup \{ \lambda \}$. By Lemma \ref{leaderLemma}, this implies that $f(\mu^0_v) = c$.
+  Since $\mu'$ was sent no later than $j - (1 - R_1) \cdot 2^{n_v(j - 1)}$, it reached $l$ by tick $j$, so $\mu' < \lambda$ and therefore $J(\mu^0_v) = \bar{J}(\lambda)$. By Lemma \ref{leaderLemma}, this implies that $f(\mu^0_v) = c$.
 
   For $l$ itself, we define $\mu^0_l = \lambda$, so $f(\mu^0_l) = c$ is also true.
 
@@ -424,13 +457,13 @@ A reasonable choice for $R_0$ and $R_1$ is $2/3$, but this should be determined 
 
   So for all $v, w \in H$, $\mu^1_w > \mu^0_v$.
 
-  We will prove that the $\mu^0_v$ are level-0, and the $\mu^1_v$ are level-1 messages of a summit with quorum size $\mathbb{w}(H)$ for the property that $f$ has value $c$. We already know that each $\mu^1_v$ can see all messages $\mu^0_w$, which have total weight $\mathbb{w}(H)$, so all we have to show is that the latter are level-0 messages, i.e. that no validator $v \in H$ changes away from the value $c$ after $\mu^0_v$.
+  We will prove that the $\mu^0_v$ are level-0, and the $\mu^1_v$ are level-1 messages of a summit with quorum size $\ww(H)$ for the property that $f$ has value $c$. We already know that each $\mu^1_v$ can see all messages $\mu^0_w$, which have total weight $\ww(H)$, so all we have to show is that the latter are level-0 messages, i.e. that no validator $v \in H$ changes away from the value $c$ after $\mu^0_v$.
 
   We prove this by induction on $<$. So let $\kappa$ be a message by $v \in H$ and $\kappa \geq \mu^0_v$:
 
   If $\kappa = \mu^0_v$, we already know that $f(\kappa) = c$.
 
-  So assume now that $\kappa > \mu^0_v$. Then $\kappa \geq \mu^1_v$ and hence $\mu^0_w < \kappa$ for every $w \in H$. So for every $w \in H$, $w$'s message $\xi \in L_f(\kappa)$ is at least $\xi \geq \mu^0_w$. By the induction hypothesis, $f(\xi) = c$. Therefore, in $L_f(\kappa)$ a strict majority $\geq \mathbb{w}(H)$ is voting for $c$, so since $f$ is plurality-driven, $f(\kappa) = c$.
+  So assume now that $\kappa > \mu^0_v$. Then $\kappa \geq \mu^1_v$ and hence $\mu^0_w < \kappa$ for every $w \in H$. So for every $w \in H$, $w$'s message $\xi \in L_f(\kappa)$ is at least $\xi \geq \mu^0_w$. By the induction hypothesis, $f(\xi) = c$. Therefore, in $L_f(\kappa)$ a strict majority $\geq \ww(H)$ is voting for $c$, so since $f$ is plurality-driven, $f(\kappa) = c$.
 \end{proof}
 
 In a blockchain context, leader messages $\lambda$ (first bullet point) should always carry new blocks. To minimize time to finalization, all other messages $\mu$ should be required to be ballots, and just vote for the most recent leader block: $B(\mu) = B(\lambda)$. Thus whenever the lemma's requirements are satisfied in any round, the full blockchain up to the most recent leader's block becomes finalized, because by proposition \ref{ghostPlurality}, the function $\mu \mapsto A_{H(B(\lambda))}(B(\mu))$ is plurality-driven.
@@ -453,7 +486,7 @@ In other words, if fewer than $C_0$ out of $C_1$ consecutive leaders have succes
 In practice $D$ should probably be about $1\%$: Even if in a single round, the leader's value gets finalized with only that threshold, if there are enough honest validators, its threshold will increase in the next round anyway. $C_0$ and $C_1$ should be chosen so that it is rare for $C_0$ faulty leaders to occur in any sequence of $C_1$ subsequent rounds (resulting in an unnecessary slowdown). In particular, during $B$ rounds, the expected number of such a faulty streak must be much less than $1$, e.g. $C_0 = 10$, $C_1 = 40$, $B = 1000$.
 
 \begin{proposition}
-  If there is a set $H$ of honest nodes of weight at least $(1/2 + D) \mathbb{w}(\mathcal{V})$, all leaders in $H$ set a first non-$\mathbb{0}$ value for some $f \in \mathcal{F}$, and there is some upper bound such that all messages between members of $H$ are eventually delivered within that bound, then eventually some value gets finalized with threshold $D$.
+  If there is a set $H$ of honest nodes of weight at least $(1/2 + D) \ww(\mathcal{V})$, all leaders in $H$ set a first non-$\mathbb{0}$ value for some $f \in \mathcal{F}$, and there is some upper bound such that all messages between members of $H$ are eventually delivered within that bound, then eventually some value gets finalized with threshold $D$.
 \end{proposition}
 
 \begin{proof}
@@ -472,7 +505,7 @@ In practice $D$ should probably be about $1\%$: Even if in a single round, the l
 % \begin{proposition}
 % Let $D = 50\%$. Assume that there is a set $H \subseteq \mathcal{V}$ of honest validators whose total weight is more than half of $\mathcal{V}$'s total weight, and such that the fastest message ever delivered between two members of $H$ is at most $C$ times as fast as the slowest one.
 % 
-% Then for every $\mathbb{w}$-plurality-driven $f$ that is eventually not $\mathbb{0}$, there will eventually be a summit finalizing the property $f(\mu) = c$ for some value $c$.
+% Then for every $\ww$-plurality-driven $f$ that is eventually not $\mathbb{0}$, there will eventually be a summit finalizing the property $f(\mu) = c$ for some value $c$.
 % \end{proposition}
 % 
 % \begin{proof}
@@ -480,9 +513,9 @@ In practice $D$ should probably be about $1\%$: Even if in a single round, the l
 % \end{proof}
 % 
 % \begin{proposition}
-%   Let $C \geq 2$, $D = 75\%$, and assume that the set $H$ of honest validators' weight is at least $75\% \cdot \mathbb{w}(\mathcal{V})$. Also, assume that delivery times between each pair of honest validators don't change by a factor of more than $C / 2$ between different rounds and when reversing direction, and such that the triangle inequality is satisfied up to that factor. I.e. assume that there is a metric\footnote{I.e. $c_{v, w} = c_{w, v}$ and $c_{u, w} \leq c_{u, v} + c_{v, w}$ for all $u, v, w \in H$} $(v, w) \mapsto c_{v, w}$ on $H$ such that every message from $v \in H$ to $w \in H$ arrives with a delay of at least $c_{v, w}$ and at most $C/2 \cdot c_{v, w}$.
+%   Let $C \geq 2$, $D = 75\%$, and assume that the set $H$ of honest validators' weight is at least $75\% \cdot \ww(\mathcal{V})$. Also, assume that delivery times between each pair of honest validators don't change by a factor of more than $C / 2$ between different rounds and when reversing direction, and such that the triangle inequality is satisfied up to that factor. I.e. assume that there is a metric\footnote{I.e. $c_{v, w} = c_{w, v}$ and $c_{u, w} \leq c_{u, v} + c_{v, w}$ for all $u, v, w \in H$} $(v, w) \mapsto c_{v, w}$ on $H$ such that every message from $v \in H$ to $w \in H$ arrives with a delay of at least $c_{v, w}$ and at most $C/2 \cdot c_{v, w}$.
 % 
-% Then for every $\mathbb{w}$-plurality-driven $f$ that is eventually not $\mathbb{0}$, there will eventually be a summit finalizing the property $f(\mu) = c$ for some value $c$.
+% Then for every $\ww$-plurality-driven $f$ that is eventually not $\mathbb{0}$, there will eventually be a summit finalizing the property $f(\mu) = c$ for some value $c$.
 % \end{proposition}
 % 
 % \begin{proof}
@@ -517,9 +550,9 @@ Every block with a timestamp between $k t_e - t_{\mathcal{V}}$ and $k t_e - t_k$
 
 The first block with a timestamp $\geq k t_e - t_k$ is the \emph{key block} for era $k$, and the first block with a timestamp $\geq k t_e - t_{\mathcal{V}}$ is the \emph{booking block}.
 
-The validator weights $\mathbb{w}_b$ for a block in era $k$ are the ones implied by the on-chain governance smart contract state in the unique booking block that is an ancestor of $b$. (See section \ref{sectionPos} for details.)
+The validator weights $\ww_b$ for a block in era $k$ are the ones implied by the on-chain governance smart contract state in the unique booking block that is an ancestor of $b$. (See section \ref{sectionPos} for details.)
 
-And the leadership schedule a validator with state $\sigma$ uses during era $k$, i.e. between time $k t_e$ and $(k + 1) t_e$, assigns to each tick $i$ the outcome of a PRNG selecting a validator with weighted probabilities $\mathbb{w}_b$ seeded with:
+And the leadership schedule a validator with state $\sigma$ uses during era $k$, i.e. between time $k t_e$ and $(k + 1) t_e$, assigns to each tick $i$ the outcome of a PRNG selecting a validator with weighted probabilities $\ww_b$ seeded with:
 \begin{itemize}
   \item the hash of $b$ and
   \item the sequence of random bits of the blocks between $b$ and the unique key block that is an ancestor of $c$,
@@ -544,7 +577,7 @@ In a proof of stake network, these aspects are connected by making the weight pr
 
 All of this can be implemented as a smart contract running inside the system itself, with two special hooks:
 \begin{itemize}
-  \item The state of the smart contract determined by each block $b$ (i.e. the result of executing the transactions in all of $b$'s ancestors including $b$ itself) defines the weight function $\mathbb{w}_b$ after that block.
+  \item The state of the smart contract determined by each block $b$ (i.e. the result of executing the transactions in all of $b$'s ancestors including $b$ itself) defines the weight function $\ww_b$ after that block.
   \item The system calls the smart contract in each block even if no user made a transaction interacting with it. In that call, the system provides the contract with information about validators' behavior.
 \end{itemize}
 In addition, users can make transactions that call the contract to deposit or withdraw stakes.
