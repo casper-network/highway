@@ -30,3 +30,32 @@ steps:
 trigger:
   branch:
   - master
+
+---
+kind: pipeline
+name: highway-release-tag
+
+steps:
+- name: build-pdf-tag
+  commands:
+  - "pdflatex -halt-on-error highway && biber highway && pdflatex -halt-on-error highway && pdflatex -halt-on-error highway"
+  image: "blang/latex:ctanfull"
+
+- name: github_publish_release_artifacts
+  settings:
+    api_key:
+      from_secret: github_token
+    checksum:
+    - sha256
+    - md5
+    files:
+    - "highway.pdf"
+    prerelease:
+    - true
+  image: plugins/github-release
+  depends_on:
+  - build-pdf-tag
+
+trigger:
+    ref:
+    - refs/tags/v*
