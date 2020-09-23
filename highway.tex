@@ -116,7 +116,7 @@ In theory, this approach could be implemented by including all previous messages
   A finite set $\sigma \subseteq \mathcal{M}$ is called a \emph{protocol state} if it is closed under $J$, i.e. if $J(\mu) \subseteq \sigma$ for every $\mu \in \sigma$. We denote the set of all protocol states as $\Sigma_{\mathcal{M}}$, or just $\Sigma$, if $\mathcal{M}$ is clear from the context.
 \end{definition}
 
-The relation $<$ is a well-founded\footnote{i.e. every nonempty set has a minimal element. This is true because for every message $\mu$, the set $\{ \lambda \mid \lambda < \mu \} = J(\mu)$ is finite, so there are no infinite descending sequences.} strict partial order\footnote{It is irreflexive because $\mu \notin J(\mu)$ and transitive because $J(\mu) \subseteq J(\lambda)$ whenever $\mu < \lambda$.} on $\mathcal{M}$. We use the usual notation for partial orders, e.g. $\mu \leq \lambda$ means $\mu \in J(\mu) \cup \{\mu\}$. We also say $\lambda$ \emph{sees} $\mu$ if $\mu \leq \lambda$.
+The relation $<$ is a well-founded\footnote{i.e. every nonempty set has a minimal element. This is true because for every message $\mu$, the set $\{ \lambda \mid \lambda < \mu \} = J(\mu)$ is finite, so there are no infinite descending sequences.} strict partial order\footnote{It is irreflexive because $\mu \notin J(\mu)$ and transitive because $J(\mu) \subseteq J(\lambda)$ whenever $\mu < \lambda$.} on $\mathcal{M}$. We use the usual notation for partial orders, e.g. $\mu \leq \lambda$ means $\mu \in J(\lambda) \cup \{\lambda\}$. We also say $\lambda$ \emph{sees} $\mu$ if $\mu \leq \lambda$.
 
 Note that $J(\mu)$ and $\bar{J}(\mu) = J(\mu) \cup \{\mu\}$ are protocol states for every message $\mu$.
 
