@@ -120,7 +120,7 @@ The relation $<$ is a well-founded\footnote{i.e. every nonempty set has a minima
 
 Note that $J(\mu)$ and $\bar{J}(\mu) = J(\mu) \cup \{\mu\}$ are protocol states for every message $\mu$.
 
-In a network, every node maintains its own current protocol state that includes all messages it sent and received so far נwith the exception of messages $\mu$ for which some justification $\lambda \in J(\mu)$ has not yet been received. Those are kept in a temporary storage while the node requests $\lambda$ from its peers. That means a node's protocol state is monotonically increasing; if it has state $\sigma$ before it has state $\tau$, then $\sigma \subseteq \tau$.
+In a network, every node maintains its own current protocol state that includes all messages it sent and received so far --- with the exception of messages $\mu$ for which some justification $\lambda \in J(\mu)$ has not yet been received. Those are kept in a temporary storage while the node requests $\lambda$ from its peers. That means a node's protocol state is monotonically increasing; if it has state $\sigma$ before it has state $\tau$, then $\sigma \subseteq \tau$.
 
 Moreover, we assume that all correct nodes will continuously sync with each other and exchange all messages they know of. So, whenever two honest nodes are in states $\sigma$ and $\sigma'$, they will eventually reach states $\tau$ and $\tau'$ such that $\sigma \cup \sigma' \subseteq \tau$ and $\sigma \cup \sigma' \subseteq \tau'$.
 
@@ -565,7 +565,7 @@ This all works well if the key block is finalized with a sufficient threshold by
 
 \subsection{Independent Eras}
 
-Several aspects of the protocol are simplified by making different eras of the protocol essentially independent of each other. What this means in practice is that each era will be essentially an independent instantiation of the highway protocol with a fixed set of validators and weights and leader schedule (which are determined by the key block and booking block corresponding to that era). The genesis block of this era will have a state inherited from the end block of the previous era (the first block published in that era after that era's end time that is finalized to a sufficient degree of certainty).
+Several aspects of the protocol are simplified by making different eras of the protocol essentially independent of each other. What this means in practice is that each era will be essentially an independent instantiation of the Highway protocol with a fixed set of validators and weights and leader schedule (which are determined by the key block and booking block corresponding to that era). The genesis block of this era will have a state inherited from the end block of the previous era (the first block published in that era after that era's end time that is finalized to a sufficient degree of certainty).
 
 Although this view of the era structure simplifies several things, there are some disadvantages. Firstly, it is not clear how to reward or penalize behavior from the validators of the previous era for behavior that takes place after the creation of the final block. In particular, such rewards or penalties cannot be implemented in the previous era as the final block is the last block of that era whose values affect the next era, and therefore we will need some other mechanism. Another potential disadvantage is the time lost during the transition between eras. If the validators of the new era need to wait for the previous era's end block to be finalized, they may lose time before they are able to start.
 
@@ -702,24 +702,19 @@ Perhaps the most important property here is that this is sufficient to show that
 More specifically, the following theorem states that if we additionally bound the round exponent, we can ensure that no message chain is too long, and thus this will limit the number of messages that ever need to be processed during one era.
 
 \begin{theorem}\label{thm:limit_spam}
-Let $k_{min}$ be the minimum round exponent, and $2^K$ be the length of an era. Additionally, let $n$ be the total number of validators among which there are $d$ dishonest ones with cumulative weight strictly less than $\ww(\mathcal{V})/2$. Then, any given message $\mu$ created by an honest validator justifies at most $2^{K-k_{min}}\cdot (d\cdot n + n-d)$ messages.
+Let $k_{min}$ be the minimum round exponent, and $2^K$ be the length of an era. Additionally, let $n$ be the total number of validators among which there are $d$ dishonest ones with cumulative weight strictly less than $2\ww(\mathcal{V})/3$. Then, any given message $\mu$ created by an honest validator cites at most $2^{K-k_{min}}\cdot (d\cdot n + n-d)$ messages.
 \end{theorem}
 \noindent 
 The following subsection is devoted to proving Theorem~\ref{thm:limit_spam}.
 
-
-%\begin{proposition}\label{chainBoundProp}
-%Consider a protocol state where all votes satisfy Criteria 1. Assume furthermore that no pair of equivocating votes are endorsed. Let $n$ be the total number of validators. Then for any message $\mu$ and any validator $W$, the set of messages by $W$ in the justification of $\mu$ are contained in the union of at most $n$ chains of messages.
-%\end{proposition}
-
 \subsubsection{Bounding the Amount of Spam}
 
 \begin{lemma}\label{chainBoundLemma}
-Consider a protocol state $\Pi$ in which all votes are valid according to Limited Naivety Criterion. Let $n$ be the total number of validators among which dishonest ones have cumulative weight strictly less than $\ww(\mathcal{V})/2$. Then for any message $\mu$ and any validator $W$, the set of messages by $W$ in the justification of $\mu$ are contained in the union of at most $n$ chains of messages.
+Consider a protocol state $\sigma$ in which all votes are valid according to Limited Naivety Criterion. Let $n$ be the total number of validators among which dishonest ones have cumulative weight strictly less than $2\ww(\mathcal{V})/3$. Then for any message $\mu$ and any validator $W$, the set of messages by $W$ in the justification of $\mu$ are contained in the union of at most $n$ chains of messages.
 \end{lemma}
 
 \begin{proof}
-As there are less than $\ww(\mathcal{V})/2$ dishonest validators and no honest validator will ever endorse an equivocation, no pair of equivocating votes are endorsed in $\Pi$. 
+As there are less than $2\ww(\mathcal{V})/3$ dishonest validators and no honest validator will ever endorse an equivocation, no pair of equivocating votes are endorsed in $\sigma$. 
 
 Let $V$ be the sender of $\mu$.
 
@@ -774,7 +769,8 @@ The strategy that satisfies these conditions is relatively simple. An honest val
 \item The sender of $\mu$ is a known equivocator (i.e. $S(\mu) \in E_V$).
 \item The justification of $\mu$ contains some other vote already in $V$'s verification buffer.
 \end{itemize}
-Upon receiving such a vote, $V$ will send out to the other validators soliciting endorsements of it. When $V$ receives endorsements for any vote $\mu$ by a set of validators comprising at least $2/3$rds of the total validator weight (i.e. $V$ receives confirmation that $\mu$ is endorsed) and once $V$ has independently confirmed the validity of $\mu$ (perhaps by requesting from its sender other votes in its justification or proofs of endorsement of such votes), $V$ will remove $\mu$ and all votes in its justification from their verification buffer. Furthermore, upon receiving a request for endorsement for a vote $\mu$, $V$ will endorse this vote (forwarding the endorsement to the other validators) unless the sender of $\mu$ is in $E_V$.
+Additionally, upon receiving any vote created by an honest-so-far validator that has an equivocation in its justifications (and hence is ''problematic'', as it can end up in the verification buffer of some honest validator), $V$ will automatically broadcast endorsement for such a vote. 
+When $V$ receives endorsements for any vote $\mu$ by a set of validators comprising at least $2/3$rds of the total validator weight (i.e. $V$ receives confirmation that $\mu$ is endorsed), $V$ will remove $\mu$ and all votes in its justification from their verification buffer.
 
 We now need to show that this strategy satisfies our requirements. First, note that since $V$ will only endorse votes by senders not known to be equivocators, $V$ will never endorse a pair of equivocating votes. This is because upon initial receipt of the second vote, $V$ will know the sender to be an equivocator and thus will not endorse. On the other hand, an honest validator will never equivocate and thus will never be on any other honest validator's list of equivocators. Thus, if endorsements are solicited for a vote $\mu$ sent by an honest validator $V$, all other honest validators will eventually endorse. Assuming that these honest validators comprise at least $2/3$rds of the total validator weight, this means that $\mu$ will eventually be endorsed. Furthermore, during periods of network stability, this will happen in time at most $O(\Delta)$. Thus, if an honest validator $V$ sends a vote $\mu$ to another honest validator $W$, it will take at most a constant number of rounds of communication for $W$ to verify the validity of the vote and at most a constant number of rounds to endorse it (if necessary), by which point $W$ will be ready to include $\mu$ in their next vote.
 
@@ -832,5 +828,3 @@ We note that the former type of votes are never naively cited by messages from $
 \printbibliography
 
 \end{document}
-
-
