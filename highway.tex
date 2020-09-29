@@ -632,7 +632,7 @@ Nodes should indeed automatically turn blocks into checkpoints, but in addition,
 
 \section{Spam}
 
-In a proof of work system, it is usually easy to control the amount of work that needs to go into processing and transmitting new messages. This is because a new block can be produced only at great computational cost, usually enough that it will take substantially fewer resources to process and propagate this block than were needed to produce it in the first place. However, in a proof-of-stake system, this no longer needs to be true. In fact, one could imagine an adversary trying to flood the system with new blocks (which are now computationally easy to manufacture), hoping that some or all of the other validators will not be able to cope with the stream. This is a possible form a denial of service attack against the system.
+In a proof of work system, it is usually easy to control the amount of work that needs to go into processing and transmitting new messages. This is because a new block can be produced only at great computational cost, usually enough that it will take substantially fewer resources to process and propagate this block than were needed to produce it in the first place. However, in a proof-of-stake system, this no longer needs to be true. In fact, one could imagine an adversary trying to flood the system with new blocks (which are now computationally easy to manufacture), hoping that some or all of the other validators will not be able to cope with the stream. This is a possible form of denial of service attack against the system.
 
 Unfortunately, it is non-trivial to deal with such attacks. One cannot simply ignore votes from a validator who is sending too many of them. For one, the validator who is originating the votes may not be the one who you are receiving them from. If these votes are contained in the justification of a block sent by a confederate, it may not be clear whether the confederate is actively assisting the denial of service attack or if they simply had a greater download capacity than you do.
 
@@ -644,14 +644,14 @@ In this section, we first outline two of possible spam patterns that creates ver
 
 In this subsection, we lay out two basic categories of spam attacks:
 
-In a vertical spam, the attacker does not produce any equivocations and merely produces a single long string of sequential messages. This could be done by simply setting their round exponent to an unrealistically small number. This is substantially the easier of type of spam to deal with, but the only type that can be produced without the attacker equivocating, and thus allowing them to be readily punished for it.
+In a vertical spam, the attacker does not produce any equivocations and merely produces a single long string of sequential messages. This could be done by simply setting their round exponent to an unrealistically small number. This is substantially the easier type of spam to deal with, but the only type that can be produced without the attacker equivocating, and thus allowing them to be readily punished for it.
 
-In an equivocation bomb, instead of making many sequential messages, the attacker makes a large number of non-sequential messages. This is a somewhat trickier situation to deal with especially because as discussed above, the attacker can show different messages to different validators, and it will take some coordination between the other validators in order to determine which messages should and shouldn't be ignored.
+In an equivocation bomb, or a fork bomb\cite{gkagol2019aleph}, instead of making many sequential messages, the attacker makes a large number of non-sequential messages. This is a somewhat trickier situation to deal with especially because as discussed above, the attacker can show different messages to different validators, and it will take some coordination between the other validators in order to determine which messages should and shouldn't be ignored.
 
 
 \subsubsection{Vertical Spam}
 
-In vertical spam, an attacker simply creates a long sequence of valid votes, faster than the other validators can readily handle. Perhaps the easiest way to deal with this issue is to set a minimum round exponent that is not too much smaller than what one would expect the fastest rate that the system can process messages. If additionally it is required that messages be timestamped and that no validator sends more than three messages in a round (measured by comparing the timestamp of the message to the timestamp of the third-most-recent message by the same validator in its history), this ensures that no attacker can create valid, non-equivocating messages at a rate much faster than that of any of the honest validators.
+In vertical spam, an attacker simply creates a long sequence of valid votes, faster than the other validators can readily handle. Perhaps the easiest way to deal with this issue is to set a minimum round exponent that is not too much smaller than what one would expect the fastest rate that the system can process messages. If additionally it is required that messages be timestamped and that no validator sends more than two messages in a round (measured by comparing the timestamp of the message to the timestamp of the third-most-recent message by the same validator in its history), this ensures that no attacker can create valid, non-equivocating messages at a rate much faster than that of any of the honest validators.
 
 This has one potential issue, however. Although an attacker many not be able to produce messages at a faster rate than honest validators, by delaying sending these messages, they may be able to manufacture a situation where many saved up messages are released at once. If they spent enough time saving up this sequence of messages, this may well be enough to at least temporarily shut down the system.
 
@@ -681,7 +681,7 @@ Notice that if we limit the round exponents that can be used by any validators a
 \begin{definition}
 An \emph{endorsement} is a non-vote message between validators that consists of a validator $V$ and the hash of a vote $\lambda$, and is digitally signed by $V$. This endorsement asserts that $V$ did not know of equivocations by the sender of $\lambda$ at the time.
 
-A vote $\lambda$ is said to be \emph{endorsed} if it has endorsements by a collection of validators of total weight more than $1/2$ of the total validator weight.
+A vote $\lambda$ is said to be \emph{endorsed} if it has endorsements by a collection of validators of total weight more than $2/3$ of the total validator weight.
 \end{definition}
 
 The protocol will specify that validators create endorsements only of votes sent by other validators that they do not know to be equivocators. We will discuss later the circumstances under which we will actually need them to create endorsements, but for now, we will assume that they create endorsements for every message they receive by a sender that they do not know to be an equivocator. Once an endorsement is created, it can then be shared among the other validators.
@@ -698,7 +698,7 @@ We now introduce a new validity criterion:
 \paragraph{Limited Naivety Criterion:} A vote $\mu$ sent by validator $V$ is considered incorrect if there is an equivocation $(\lambda_1, \lambda_2)$ and two messages $\mu_1, \mu_2$ (possibly equal, possibly coinciding with $\mu$) by $V$ such that $\mu \geq \mu_1 \geq_n \lambda_1 and \mu \geq \mu_2 \geq_n \lambda_2$.
 
 Perhaps the most important property here is that this is sufficient to show that not too many equivocating votes are contained in any message justification.
-% 
+
 More specifically, the following theorem states that if we additionally bound the round exponent, we can ensure that no message chain is too long, and thus this will limit the number of messages that ever need to be processed during one era.
 
 \begin{theorem}\label{thm:limit_spam}
