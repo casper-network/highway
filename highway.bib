@@ -50,19 +50,43 @@
   publisher={Elsevier}
 }
 
-@techreport{fischer1982impossibility,
-  title={Impossibility of distributed consensus with one faulty process.},
-  author={Fischer, Michael J and Lynch, Nancy A and Paterson, Michael S},
-  year={1982},
-  institution={Massachusetts Inst of Tech Cambridge lab for Computer Science}
+@article{FLP85,
+  author    = {Michael J. Fischer and
+               Nancy A. Lynch and
+               Mike Paterson},
+  title     = {Impossibility of Distributed Consensus with One Faulty Process},
+  journal   = {J. {ACM}},
+  volume    = {32},
+  number    = {2},
+  pages     = {374--382},
+  year      = {1985},
+  url       = {https://doi.org/10.1145/3149.214121},
+  doi       = {10.1145/3149.214121},
+  timestamp = {Wed, 14 Nov 2018 10:35:24 +0100},
+  biburl    = {https://dblp.org/rec/bib/journals/jacm/FischerLP85},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@article{gkagol2019aleph,
-  title={Aleph: Efficient Atomic Broadcast in Asynchronous Networks with Byzantine Nodes},
-  author={G{\k{a}}gol, Adam and Le{\'s}niak, Damian and Straszak, Damian and {\'S}wi{\k{e}}tek, Micha{\l}},
-  journal={arXiv preprint arXiv:1908.05156},
-  year={2019}
+
+@inproceedings{GLSS19,
+  author    = {Adam Gagol and
+               Damian Lesniak and
+               Damian Straszak and
+               Michal Swietek},
+  title     = {Aleph: Efficient Atomic Broadcast in Asynchronous Networks with Byzantine
+               Nodes},
+  booktitle = {Proceedings of the 1st {ACM} Conference on Advances in Financial Technologies,
+               {AFT} 2019, Zurich, Switzerland, October 21-23, 2019},
+  pages     = {214--228},
+  publisher = {{ACM}},
+  year      = {2019},
+  url       = {https://doi.org/10.1145/3318041.3355467},
+  doi       = {10.1145/3318041.3355467},
+  timestamp = {Mon, 21 Oct 2019 16:48:24 +0200},
+  biburl    = {https://dblp.org/rec/conf/aft/GagolLSS19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
+
 
 @inproceedings{kiayias2017ouroboros,
   title={Ouroboros: A provably secure proof-of-stake blockchain protocol},
@@ -73,14 +97,22 @@
   organization={Springer}
 }
 
-@inproceedings{miller2016honey,
-  title={The honey badger of BFT protocols},
-  author={Miller, Andrew and Xia, Yu and Croman, Kyle and Shi, Elaine and Song, Dawn},
-  booktitle={Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security},
-  pages={31--42},
-  year={2016},
-  organization={ACM},
-  url={https://eprint.iacr.org/2016/199.pdf}
+@inproceedings{MXCSS16,
+  author    = {Andrew Miller and
+               Yu Xia and
+               Kyle Croman and
+               Elaine Shi and
+               Dawn Song},
+  title     = {The Honey Badger of {BFT} Protocols},
+  booktitle = {Proceedings of the 2016 {ACM} {SIGSAC} Conference on Computer and
+               Communications Security, Vienna, Austria, October 24-28, 2016},
+  pages     = {31--42},
+  year      = {2016},
+  url       = {https://doi.org/10.1145/2976749.2978399},
+  doi       = {10.1145/2976749.2978399},
+  timestamp = {Tue, 06 Nov 2018 11:07:31 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/ccs/MillerXCSS16},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
 @article{moser1999byzantine,
@@ -103,26 +135,278 @@
 
 @article{nakamoto2008bitcoin,
   title={Bitcoin: A peer-to-peer electronic cash system},
-  author={Nakamoto, Satoshi and others},
+  author={Nakamoto, Satoshi},
   year={2008},
-  publisher={Working Paper}
 }
 
-@article{wood2014ethereum,
-  title={Ethereum: A secure decentralised generalised transaction ledger},
-  author={Wood, Gavin and others},
-  journal={Ethereum project yellow paper},
-  volume={151},
-  number={2014},
-  pages={1--32},
-  year={2014}
-}
 
 @article{zamfir2018casper,
   title={Introducing the minimal CBC Casper family of consensus protocols},
-  author={Zamfir, V and Rush, N and Asgaonkar, A and Piliouras, G},
-  journal={DRAFT v1. 0},
-  volume={5},
+  author={Zamfir, Vlad and Rush, Nate and Asgaonkar, Aditya and Piliouras, Georgios},
   year={2018},
   url={https://github.com/cbc-casper/cbc-casper-paper/blob/master/cbc-casper-paper-draft.pdf}
+}
+
+@article{DLS88,
+  author    = {Cynthia Dwork and
+               Nancy A. Lynch and
+               Larry J. Stockmeyer},
+  title     = {Consensus in the presence of partial synchrony},
+  journal   = {J. {ACM}},
+  volume    = {35},
+  number    = {2},
+  pages     = {288--323},
+  year      = {1988},
+  url       = {http://doi.acm.org/10.1145/42282.42283},
+  doi       = {10.1145/42282.42283},
+  timestamp = {Wed, 14 Nov 2018 10:35:25 +0100},
+  biburl    = {https://dblp.org/rec/journals/jacm/DworkLS88.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{MNR19,
+  author    = {Dahlia Malkhi and
+               Kartik Nayak and
+               Ling Ren},
+  editor    = {Lorenzo Cavallaro and
+               Johannes Kinder and
+               XiaoFeng Wang and
+               Jonathan Katz},
+  title     = {Flexible Byzantine Fault Tolerance},
+  booktitle = {Proceedings of the 2019 {ACM} {SIGSAC} Conference on Computer and
+               Communications Security, {CCS} 2019, London, UK, November 11-15, 2019},
+  pages     = {1041--1053},
+  publisher = {{ACM}},
+  year      = {2019},
+  url       = {https://doi.org/10.1145/3319535.3354225},
+  doi       = {10.1145/3319535.3354225},
+  timestamp = {Fri, 06 Mar 2020 13:19:56 +0100},
+  biburl    = {https://dblp.org/rec/conf/ccs/MalkhiN019.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CL99,
+  author    = {Miguel Castro and
+               Barbara Liskov},
+  editor    = {Margo I. Seltzer and
+               Paul J. Leach},
+  title     = {Practical Byzantine Fault Tolerance},
+  booktitle = {Proceedings of the Third {USENIX} Symposium on Operating Systems Design
+               and Implementation (OSDI), New Orleans, Louisiana, USA, February 22-25,
+               1999},
+  pages     = {173--186},
+  publisher = {{USENIX} Association},
+  year      = {1999},
+  url       = {https://dl.acm.org/citation.cfm?id=296824},
+  timestamp = {Wed, 06 Nov 2019 16:45:49 +0100},
+  biburl    = {https://dblp.org/rec/conf/osdi/CastroL99.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{BLS04,
+  author    = {Dan Boneh and
+               Ben Lynn and
+               Hovav Shacham},
+  title     = {Short Signatures from the Weil Pairing},
+  journal   = {J. Cryptology},
+  volume    = {17},
+  number    = {4},
+  pages     = {297--319},
+  year      = {2004},
+  url       = {https://doi.org/10.1007/s00145-004-0314-9},
+  doi       = {10.1007/s00145-004-0314-9},
+  timestamp = {Thu, 18 May 2017 09:52:09 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/joc/BonehLS04},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{BKM18,
+  author    = {Ethan Buchman and
+               Jae Kwon and
+               Zarko Milosevic},
+  title     = {The latest gossip on {BFT} consensus},
+  journal   = {CoRR},
+  volume    = {abs/1807.04938},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1807.04938},
+  archivePrefix = {arXiv},
+  eprint    = {1807.04938},
+  timestamp = {Mon, 13 Aug 2018 16:47:26 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1807-04938},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{BG17,
+  author    = {Vitalik Buterin and
+               Virgil Griffith},
+  title     = {Casper the Friendly Finality Gadget},
+  journal   = {CoRR},
+  volume    = {abs/1710.09437},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1710.09437},
+  archivePrefix = {arXiv},
+  eprint    = {1710.09437},
+  timestamp = {Mon, 13 Aug 2018 16:48:53 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1710-09437},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{YMRGA19,
+  author    = {Maofan Yin and
+               Dahlia Malkhi and
+               Michael K. Reiter and
+               Guy Golan{-}Gueta and
+               Ittai Abraham},
+  editor    = {Peter Robinson and
+               Faith Ellen},
+  title     = {HotStuff: {BFT} Consensus with Linearity and Responsiveness},
+  booktitle = {Proceedings of the 2019 {ACM} Symposium on Principles of Distributed
+               Computing, {PODC} 2019, Toronto, ON, Canada, July 29 - August 2, 2019},
+  pages     = {347--356},
+  publisher = {{ACM}},
+  year      = {2019},
+  url       = {https://doi.org/10.1145/3293611.3331591},
+  doi       = {10.1145/3293611.3331591},
+  timestamp = {Fri, 19 Jul 2019 08:08:29 +0200},
+  biburl    = {https://dblp.org/rec/conf/podc/YinMRGA19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@inproceedings{CS20,
+  author    = {Benjamin Y. Chan and
+               Elaine Shi},
+  title     = {Streamlet: Textbook Streamlined Blockchains},
+  booktitle = {{AFT} '20: 2nd {ACM} Conference on Advances in Financial Technologies,
+               New York, NY, USA, October 21-23, 2020},
+  pages     = {1--11},
+  publisher = {{ACM}},
+  year      = {2020},
+  url       = {https://doi.org/10.1145/3419614.3423256},
+  doi       = {10.1145/3419614.3423256},
+  timestamp = {Thu, 29 Oct 2020 14:47:19 +0100},
+  biburl    = {https://dblp.org/rec/conf/aft/ChanS20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@article{AMNRY19,
+  author    = {Ittai Abraham and
+               Dahlia Malkhi and
+               Kartik Nayak and
+               Ling Ren and
+               Maofan Yin},
+  title     = {Sync HotStuff: Synchronous SMR with $2\Delta$ Latency and
+               Optimistic Responsiveness},
+  journal   = {{IACR} Cryptology ePrint Archive},
+  volume    = {2019},
+  pages     = {270},
+  year      = {2019},
+  url       = {https://eprint.iacr.org/2019/270},
+  timestamp = {Tue, 16 Apr 2019 16:32:32 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/iacr/AbrahamMNRY19},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{GAGMPRSTT19,
+  author    = {Guy Golan{-}Gueta and
+               Ittai Abraham and
+               Shelly Grossman and
+               Dahlia Malkhi and
+               Benny Pinkas and
+               Michael K. Reiter and
+               Dragos{-}Adrian Seredinschi and
+               Orr Tamir and
+               Alin Tomescu},
+  title     = {{SBFT:} {A} Scalable and Decentralized Trust Infrastructure},
+  booktitle = {49th Annual {IEEE/IFIP} International Conference on Dependable Systems
+               and Networks, {DSN} 2019, Portland, OR, USA, June 24-27, 2019},
+  pages     = {568--580},
+  publisher = {{IEEE}},
+  year      = {2019},
+  url       = {https://doi.org/10.1109/DSN.2019.00063},
+  doi       = {10.1109/DSN.2019.00063},
+  timestamp = {Wed, 16 Oct 2019 14:14:55 +0200},
+  biburl    = {https://dblp.org/rec/conf/dsn/Golan-GuetaAGMP19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@inproceedings{LVCQV16,
+  author    = {Shengyun Liu and
+               Paolo Viotti and
+               Christian Cachin and
+               Vivien Qu{\'{e}}ma and
+               Marko Vukolic},
+  editor    = {Kimberly Keeton and
+               Timothy Roscoe},
+  title     = {{XFT:} Practical Fault Tolerance beyond Crashes},
+  booktitle = {12th {USENIX} Symposium on Operating Systems Design and Implementation,
+               {OSDI} 2016, Savannah, GA, USA, November 2-4, 2016},
+  pages     = {485--500},
+  publisher = {{USENIX} Association},
+  year      = {2016},
+  url       = {https://www.usenix.org/conference/osdi16/technical-sessions/presentation/liu},
+  timestamp = {Tue, 29 Jan 2019 17:35:36 +0100},
+  biburl    = {https://dblp.org/rec/conf/osdi/LiuVCQV16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@article{KADCW09,
+  author    = {Ramakrishna Kotla and
+               Lorenzo Alvisi and
+               Michael Dahlin and
+               Allen Clement and
+               Edmund L. Wong},
+  title     = {Zyzzyva: Speculative Byzantine fault tolerance},
+  journal   = {{ACM} Trans. Comput. Syst.},
+  volume    = {27},
+  number    = {4},
+  pages     = {7:1--7:39},
+  year      = {2009},
+  url       = {https://doi.org/10.1145/1658357.1658358},
+  doi       = {10.1145/1658357.1658358},
+  timestamp = {Wed, 14 Nov 2018 10:49:57 +0100},
+  biburl    = {https://dblp.org/rec/bib/journals/tocs/KotlaADCW09},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{NNT20,
+  author    = {Joachim Neu and
+               Ertem Nusret Tas and
+               David Tse},
+  title     = {Ebb-and-Flow Protocols: {A} Resolution of the Availability-Finality
+               Dilemma},
+  journal   = {CoRR},
+  volume    = {abs/2009.04987},
+  year      = {2020},
+  url       = {https://arxiv.org/abs/2009.04987},
+  archivePrefix = {arXiv},
+  eprint    = {2009.04987},
+  timestamp = {Thu, 17 Sep 2020 12:49:52 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2009-04987.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@article{BHKPQRSWZ18,
+  author    = {Vitalik Buterin and 
+               Diego Hernandez and
+               Thor Kamphefner and
+               Khiem Pham and
+               Zhi Qiao and
+               Danny Ryan and
+               Juhyeok Sin and
+               Ying Wang and
+               Yan X Zhang},
+  title     = {Combining GHOST and Casper},
+  journal   = {CoRR},
+  volume    = {abs/2003.03052},
+  year      = {2020},
+  url       = {https://arxiv.org/abs/2003.03052},
+  archivePrefix = {arXiv},
+  eprint    = {1807.04938},
+  timestamp = {Fri, 6 Mar 2020 06:39:10 UTC},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
