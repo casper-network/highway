@@ -36,6 +36,7 @@
 \affil[3,4]{Cardinal Cryptography}
 \affil[5]{Ethereum Research}
 
+
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
@@ -146,9 +147,9 @@ State-of-the-art protocols such as Hotstuff~\cite{YMRGA19}, Tendermint~\cite{BG1
 %
 However, there are several practical properties of such blockchain systems that are not captured by this classical model, and consequently, significant room for improvement remains.
 %
-One such important aspect is that the partition of nodes into honest and byzantine might not accurately reflect their true attitude.
+One such important aspect is that the partition of nodes into honest and Byzantine might not accurately reflect their true attitude.
 %
-In fact, according to the model, even "honest" nodes that have missed several protocol messages because of a DDoS attack or even a temporary network failure, are considered byzantine.
+In fact, according to the model, even ``honest'' nodes that have missed several protocol messages because of a DDoS attack or even a temporary network failure, are considered Byzantine.
 %
 In a situation where more than $1/3$ of nodes suffered (even for a few seconds) from such a network issue, protocols in the classical BFT model are not guaranteed to function properly.
 
@@ -164,22 +165,22 @@ For the proof of the main liveness result -- Theorem~\ref{thm:liveness} -- to go
 %
 Therefore, with the only exception of large-scale, coordinated attacks that are intended to bring down the whole system, one should always expect almost all nodes to behave honestly.
 
-Motivated by this realization there has been several works that design protocols which are safe in the classical sense while at the same time trying to offer better guarantees in "typical" scenarios.
+Motivated by this realization there have been several works that design protocols which are safe in the classical sense while at the same time trying to offer better guarantees in ``typical'' scenarios.
 %
 In this paper we propose a new protocol -- Highway -- that contributes to this line of work.
 %
-The security of Highway is still formalized on grounds of the partially synchronous BFT model, thus in particular it achieves safety and liveness in the most demanding setting when $1/3$ of all nodes are byzantine.
+The security of Highway is still formalized on grounds of the partially synchronous BFT model, thus in particular it achieves safety and liveness in the most demanding setting when $1/3$ of all nodes are Byzantine.
 %
 However, on top of that, Highway offers the following two features that make it particularly attractive in real-world deployments.
 %
-First of all, in periods of honest participation of a large fraction of nodes, it allows to reach finality of blocks with "confidence" much higher than the typical threshold of $1/3$.
+First of all, in periods of honest participation of a large fraction of nodes, it allows to reach finality of blocks with ``confidence'' much higher than the typical threshold of $1/3$.
 To give an example, if a block reaches finality confidence of $0.8$ (which is possible in Highway) then at least $0.8$ fraction of the nodes would need to violate the protocol in order to revert the block from the chain.
 %
 This stands in contrast with the classical notion of finalization that is binary: either a block is finalized (this means finality confidence of $1/3$) or it is not.
 %
 The second practical improvement in Highway is that it achieves flexibility akin to the notion defined in~\cite{MNR19}.
 %
-The nodes participating in Highway might be configured with different security trade-offs between the allowed number of byzantine and crashing nodes (nodes that might go offline but are otherwise honest) in the protocol.
+The nodes participating in Highway might be configured with different security trade-offs between the allowed number of Byzantine and crashing nodes (nodes that might go offline but are otherwise honest) in the protocol.
 %
 Flexibility then means that despite these differences in configuration, all the nodes run a single version of the protocol and perform the same actions, only the finality decisions they make depend on the chosen parameters.
 %
@@ -189,7 +190,7 @@ Technically, Highway can be categorized as a DAG-based protocol~\cite{moser1999b
 %
 In its design, Highway derives from the CBC-Casper protocol~\cite{zamfir2018casper} and significantly improves upon it by the use of a new finality mechanism, message creation schedule and spam prevention mechanism.
 %
-We believe that the conceptual simplicity of DAG-based protocols along with the desirable practical features of the Highway protocol make it a solid choice for a consensus engine in a proof of stake based blockchain. 
+We believe that the conceptual simplicity of DAG-based protocols along with the desirable practical features of the Highway protocol make it a solid choice for a consensus engine in a Proof of Stake-based blockchain. 
 
 
 
@@ -198,14 +199,14 @@ We believe that the conceptual simplicity of DAG-based protocols along with the 
 
 \subsection{Model}
 
-We consider a system with a fixed set $\mathcal{V}$ of $n$ validators, each of them equipped with public key that is known to other nodes.
-This model matches the scenario of 'permissioned blockchain', but the protocol can be applied to semi-permissionless scenario as well by rotating the set of validators.
+We consider a system with a fixed set $\mathcal{V}$ of $n$ validators, each of them equipped with a public key that is known to other nodes.
+This model matches the scenario of ``permissioned blockchain'', but the protocol can be applied to semi-permissionless scenario as well by rotating the set of validators.
 Our model makes the following assumptions:
 \begin{itemize}
     \item\emph{(Reliable point-to-point communication)}
     We assume that channels do not drop messages and all messages in the protocol are authenticated by digital signature of the sender.
-    % Validator receives a message from another validator if and only if the latter sent it and intended it to be received by the former. 
-    \item\emph{(Partially synchronous network)} There exists a publicly known bound $\Delta$ and an unknown Global Stabilization Time (GST) so that after GST, whenever a validator sends a message, it reaches the receipient within time $\Delta$. Such version of partial synchrony is known as a \emph{known $\Delta$ flavour}, for the discussion on the version without publicly known $\Delta$, see Subsection \ref{sec:dynamicrounds}.
+    \item\emph{(Partially synchronous network)} There exists a publicly known bound $\Delta$ and an unknown Global Stabilization Time (GST) so that after GST, whenever a validator sends a message, it reaches the receipient within time $\Delta$. Additionally, we assume that validators have bounded clock drift\footnote{Note that bounded clock drift can be achieved in any partially synchronous network by means of Byzantine clock synchronization such as \cite{DLS88}}. 
+    Such version of partial synchrony is known as a \emph{known $\Delta$ flavour}, for the discussion on the version without publicly known $\Delta$, see Subsection \ref{sec:dynamicrounds}.
     \item\emph{(Byzantine faults)} We assume that $f$ out of $n$ validators are under total control of an adversary, and hence can arbitrarily deviate from the protocol. We do not make a global assumption on the relation between $f$ and $n$, as safety and liveness require different bounds, and the latter have an interaction with number of crashing nodes as well.
     \item\emph{(Crashing faults)} We assume that $c$ out of $n$ nodes can become permanently unresponsive at some point in the protocol execution.
 \end{itemize}
@@ -227,11 +228,11 @@ For a block $B$, we refer to all the blocks that are on the other branches as \e
 
 \subsection{Practical challenges}
 
-{\bf Strong optimistic finality.} While since the initial definition of the partially synchronous model by Dwork, Lynch and Stockmeyer~\cite{DLS88} the vast body of research was created to optimize various parameters of protocols in this setting, most of it was written under the semi-formal assumption that the existence of more than $n/3$ dishonest nodes predates the existence of any provable guarantees for such protocols.
+{\bf Strong optimistic finality.} While since the initial definition of the partially synchronous model by Dwork, Lynch and Stockmeyer~\cite{DLS88} a vast body of research was created to optimize various parameters of protocols in this setting, most of it was written under the semi-formal assumption that the existence of more than $n/3$ dishonest nodes predates the existence of any provable guarantees for such protocols.
 Such an assumption stems from the fact that, as proven in the original paper, it is not possible for a partially synchronous protocol to guarantee both liveness and finality if $n<3f+1$.
 
 In spite of this negative result, it is however possible to provide additional finality guarantees in the scenario where for a prolonged period even dishonest nodes do not deviate from the protocol and actively work to finalize blocks.
-Although it may not seem like an important observation from the perspective of classical security models, we stress that it carries significant practical consequences -- in most cases of blockchain deployments it may be assumed that most of the time basically all the nodes will actively collaborate to achieve consensus\footnote{As most systems rewards and punishes validators based on their behavior, offline nodes and small-scale attacks (ones that do not succeed in reverting a finalized block) are strongly disincentivised and hence not common.}.
+Although it may not seem like an important observation from the perspective of classical security models, we stress that it carries significant practical consequences -- in most cases of blockchain deployments it may be assumed that most of the time basically all the nodes will actively collaborate to achieve consensus\footnote{As most systems reward and punishe validators based on their behavior, offline nodes and small-scale attacks (ones that do not succeed in reverting a finalized block) are strongly disincentivised and hence not common.}.
 It is hence possible to provide much stronger finality guarantees for blocks created during such periods, so to revert them much more than $n/3$ validators would have to collude.
 
 
@@ -244,7 +245,7 @@ Besides eliminating the need to make an additional consensus on this particular 
 
 
 \subsection{Our contribution}
-We present Highway - a consensus protocol achieving strong optimistic finality that is flexible by allowing validators to use different confidence thresholds to convince themselves that a given block is 'finalized' (both confidence threshold and finality will be properly defined in Subsection \ref{sec:finality}). 
+We present Highway - a consensus protocol achieving strong optimistic finality that is flexible by allowing validators to use different confidence thresholds to convince themselves that a given block is ``finalized'' (both confidence threshold and finality will be properly defined in Subsection \ref{sec:finality}). 
 
 Unless some validators actively deviate from the protocol, the finality of a block can only increase for a given validator, which intuitively corresponds to the ever-increasing number of confirmations for a block in PoW scenario.
 However, unlike in PoW, in Highway the confidence levels for a given block can be directly interpreted as the number of validators that would need to misbehave in order to reverse such a block, what we formalize as the following theorem:
@@ -253,11 +254,11 @@ However, unlike in PoW, in Highway the confidence levels for a given block can b
 If an honest validator reaches finality with confidence threshold $t\geq f$ for a given valid block $B$, then no honest validator will ever reach finality with confidence threshold $t$ for a block competing with $B$.
 \end{theorem}
 
-Note that while due to the aforementioned impossibility result \cite{DLS88} it is not possible to prove the liveness for confidence threshold $\frac{n}{3}$ and higher, in practice the vast majority of validators will not deviate from the protocol most of the times.
+Note that while due to the aforementioned impossibility result \cite{DLS88} it is not possible to prove liveness for confidence threshold $\frac{n}{3}$ and higher, in practice the vast majority of validators will not deviate from the protocol most of the times.
 In such times, arbitrarily high confidence thresholds can be reached, which makes block constructed during such periods virtually impossible to revert.
 
 Next, we provide a bound on the number of honest validators needed to guarantee that the protocol will continue finalizing blocks with given confidence threshold.
-We note that it is in line with the classical $n\geq 3f+1$ bound with the added notion of 'crashing faults', denoted by $c$, which disrupts the consensus process, but not as much as the Byzantine ones. 
+We note that it is in line with the classical $n\geq 3f+1$ bound with the added notion of ``crashing faults'', denoted by $c$, which disrupts the consensus process, but not as much as the Byzantine ones. 
 
 \begin{theorem}[\bf Liveness]\label{thm:liveness}
 For every confidence threshold $0 \leq t < \frac{n}{3}$, if $f\leq t$ and $c< \frac{n-3t}{2}$, then the chain of blocks finalized with confidence $t$ grows indefinitely for each honest validator.
@@ -268,10 +269,10 @@ For every confidence threshold $0 \leq t < \frac{n}{3}$, if $f\leq t$ and $c< \f
 
 The line of work on partially synchronous protocols was initiated with the seminal work of Dwork, Lynch and Stockmeyer \cite{DLS88}, and gained popularity with the introduction of PBFT\cite{CL99} protocol and its numerous versions\cite{BKM18, KADCW09, MNR19}. 
 Classically, protocols in this model attain resilience against less than $n/3$ malicious nodes, due to a known bound stating that is it not possible to provide both safety and liveness with higher number of Byzantine faults \cite{DLS88}.
-Some of the works however explore the concept of 'flexibility' understood usually as providing the strongest $n/3$ security in the general partially synchronous model, and additional guarantees in case some additional conditions, such as network synchronicity or limited adversarial behavior, are met.
+Some of the works however explore the concept of ``flexibility'' understood usually as providing the strongest $n/3$ security in the general partially synchronous model, and additional guarantees in case some additional conditions, such as network synchronicity or limited adversarial behavior, are met.
 
-Gasper\cite{BHKPQRSWZ18}, the newly proposed candidate for Ethereum 2.0 consensus mechanism, analyzed the case of an additional guarantees in case the network satisfies synchronicity assumptions. Later very similar considerations got a proper formal treatment with the introduction of the snap-and-chat family of protocols\cite{NNT20}.
-The snap-and-chat protocols define two 'levels of finality' (formalized in the paper as two ledgers, one being an extension of another). The first one, faster, relies on the classical partially synchronous assumptions and is guaranteed to be live and safe as long as less than $n/3$ nodes are faulty. 
+Gasper\cite{BHKPQRSWZ18}, the newly proposed candidate for Ethereum 2.0 consensus mechanism, analyzed the case of additional guarantees in case the network satisfies synchronicity assumptions. Later very similar considerations got a proper formal treatment with the introduction of the snap-and-chat family of protocols\cite{NNT20}.
+The snap-and-chat protocols define two ``levels of finality'' (formalized in the paper as two ledgers, one being an extension of another). The first one, faster, relies on the classical partially synchronous assumptions and is guaranteed to be live and safe as long as less than $n/3$ nodes are faulty. 
 The second level provides a stronger $n/2$ resilience against adversarial nodes, but is live only as long as the network is synchronous.
 As in practical deployment assuming network synchronicity requires rather pessimistic assumptions about network latency, the second finality can be assumed to progress significantly slower. 
 The provided construction is very modular and allow to use wide variety of protocols to provide for the first and second finality levels, and the consistency between both levels is guaranteed.
@@ -280,19 +281,17 @@ Protocol that carries perhaps the most similarities with Highway when it comes t
 It defines the new type of faulty node, the alive-but-corrupt node, that fully cooperates with honest nodes unless it is able to perform a successful attack on protocol safety.
 Intuitively, it models the practical situation in which nodes without an explicit incentive do not cheat, as that would mean loosing rewards in the PoS system. 
 Similarly as in Highway, the protocol is able to tolerate much more adversarial nodes if they do not aim to merely break the liveness, but are interested only in breaking safety - the bounds match the bounds in our paper. 
-Flexibile BFT also introduces, as the name suggests, certain flexibility for the nodes when it comes to choosing the parameters related to the finality - each of the nodes can have independent assumptions about number of faulty nodes of each kind, and it is guaranteed that two honest nodes with correct assumptions can't finalize competing blocks, and if all nodes have correct assumptions, the protocol will continue making progress.
+Flexible BFT also introduces, as the name suggests, certain flexibility for the nodes when it comes to choosing the parameters related to the finality - each of the nodes can have independent assumptions about number of faulty nodes of each kind, and it is guaranteed that two honest nodes with correct assumptions can't finalize competing blocks, and if all nodes have correct assumptions, the protocol will continue making progress.
 The biggest conceptual difference is that in Flexible BFT, assumptions held by nodes explicitly influence their behavior in the protocol, while in Highway the assumed confidence threshold influences only the local computations performed on the DAG which form is not influenced by specific choices of confidence thresholds made by validators. 
 There are two main consequences of this difference. First, in Highway validators can update their confidence thresholds and they are able to recompute finality of all of the blocks without the need of communicating with other validators, while in case of Flexible BFT that would require rerunning the whole protocol. 
-Second, perhaps even more importantly, Flexible BFT can stall in case some of the honest incorrectly assume number of faulty parties, while Highway never stalls.
-To illustrate this difference, consider the scenario in which there is a big group of overly-conservative honest nodes incorrectly assuming that $90\%$ of the nodes are honest -- in such scenario in Flexible BFT even less conservative honest nodes will not be able to finalize blocks, while less conservative honest validators in Highway will not be influenced by such a choice of other validators, as it does not influence the communication between them in any way -- in fact, validators doesn't even have explicit mean of checking confidence thresholds chosen by the others. 
+Second, perhaps even more importantly, Flexible BFT can stall for everyone in case some of the honest validators incorrectly assume the number of faulty parties.
+In contrast, in Highway unit production never stalls, and the consensus may stall from the perspective of a given validator only if that specific validator made incorrect assumptions on the number of faulty parties.
 
-% \begin{itemize}
-%     \item Protocols providing different guarantees based on type of the network (sync/part. sync) - XFT \cite{LVCQV16} - 
-%     \item $n>3f+2c+1$ - \cite{GAGMPRSTT19} - no flexibility
-% \end{itemize}
+To illustrate this difference, consider the scenario in which there is a big group of overly-conservative honest nodes incorrectly assuming that $90\%$ of the nodes are honest -- in such scenario in Flexible BFT even less conservative honest nodes will not be able to finalize blocks, while less conservative honest validators in Highway will not be influenced by such a choice of other validators, as it does not influence the communication between them in any way -- in fact, validators doesn't even have explicit means of checking confidence thresholds chosen by the others. 
+
 
 \section{Protocol}
-We denote by $G$ the "genesis block" of the blockchain, which is considered part of the protocol definition.
+We denote by $G$ the ``genesis block'' of the blockchain, which is considered part of the protocol definition.
 %
 Except the genesis block, every other block $B$ consists of a reference to its parent, denoted $\mathrm{prev}(B)$, and the content of the block  -- typically a list of transactions.
 %
@@ -317,7 +316,7 @@ We will refer to such messages broadcast during normal protocol operation as \em
     \item {\bf Block.} In case a unit is produced by the validator appointed to produce a block at a given time, it is included in the unit. 
 \end{itemize}
 
-All units to be considered correct must also a digital signature by its sender.
+All units to be considered correct must also have a digital signature by its sender.
 %
 We denote the sender (creator) of a unit $u$ by $S(u)$.
 %
@@ -328,7 +327,7 @@ In the protocol it will be often important not only whether a given unit $u$ cit
 %
 Such a notion is easily captured by the existence of the chain of citations connecting $u$ and $u'$.
 %
-In the presence of such a chain, we say that the unit $u$ is a  \emph{justification} of unit $u'$ or, in other words, that $u'$ justifies $u$.
+In the presence of such a chain, we say that the unit $u'$ is a  \emph{justification} of unit $u$ or, in other words, that $u'$ justifies $u$.
 %
 As the justification relation is transitive, we interpret it as a partial order on the set of units and denote the fact that $u'$ justifies $u$ by $u'\leq u$.
 %
@@ -354,7 +353,6 @@ Note that malicious nodes can still deviate from this rule, and hence the follow
 A pair of units $(u,u')$ is an \emph{equivocation} if $S(u)=S(u')$ and $u$ and $u'$ are incomparable by the relation $\leq$. In such a case, the sender $S(u)$ is called an \emph{equivocator}.
 \end{definition}
 
-% For a given protocol state $\sigma$ we denote the set of proven equivocators as $$E(\sigma) = \{v\in V| \text{There exists } u,u' \text{ created by } v \text{ s.t. } u\not\leq u' \text{and } u'\not\leq u\}$$
 
 For a given set of units $\cS$ we denote the set of proven equivocators below it as $$E(\cS) \defeq \{V\in \mathcal{V} \mid \text{There exists } u,u'\in D(\cS) \text{ created by } V \text{ s.t. } u\not\leq u' \text{and } u'\not\leq u\}$$
 
@@ -362,19 +360,19 @@ We also denote the set of latest messages under a unit $u$ produced by honest (s
 $$L(u) \defeq \{v\in D(u) \mid \cS(v)\notin E(\{u\}) \text{ and } v'>v \!\Rightarrow\! \cS(v')\neq \cS(v) \text{ for every } v'\in D(u)\}.$$
 
 \subsection{Voting via the GHOST rule}
-In this section we introduce the GHOST (Greedy Heaviest-Observed Sub-Tree) rule for fork selection in blockchains and explain how one can concretely implement it using an idea called virtual voting in the DAG.
+In this section we introduce the GHOST (Greedy Heaviest Observed Sub-Tree) rule for fork selection in blockchains and explain how one can concretely implement it using an idea called virtual voting in the DAG.
 
 \paragraph{The GHOST rule.}
 An important task run by every blockchain client is that of fork selection.
 %
-Given a set of blocks $\cB$ that do not necessarily form a single chain, but are typically a tree of blocks, the goal is to pick a single "tip" (i.e., a leaf in this tree) to be considered as the head of the blockchain.
+Given a set of blocks $\cB$ that do not necessarily form a single chain, but are typically a tree of blocks, the goal is to pick a single ``tip'' (i.e., a leaf in this tree) to be considered as the head of the blockchain.
 %
 In systems based on Proof of Work, such as Bitcoin or Ethereum, the Longest Chain Rule is most commonly employed for that purpose, i.e., the leaf block of maximum depth is chosen as the head.
 %
 
-In our setting, we would like the fork selection rule to somehow express the common belief of the committee of validators on which chain is the "main one".
+In our setting, we would like the fork selection rule to somehow express the common belief of the committee of validators on which chain is the ``main one''.
 %
-This however is not possible in the absence of additional information on what the validators "think".
+This however is not possible in the absence of additional information on what the validators ``think''.
 %
 Suppose therefore that besides the tree of blocks $\cB$ we are given opinions of validators, represented by a mapping 
 $$\opinion: \cV \to \cB,$$
@@ -403,7 +401,7 @@ For brevity we write $\ghost(\cB, \opinion)$ to be the block resulting from appl
 
 The GHOST rule is quite natural, intuitive and -- as we will soon demonstrate -- has a number of desirable properties.
 %
-However, for a node to apply it, it needs the tree of blocks and the "most recent" votes by each of the validators. 
+However, for a node to apply it, it needs the tree of blocks and the ``most recent'' votes by each of the validators. 
 %
 The question becomes: how should the nodes maintain their local views on the block tree and what should they consider as the current opinions of other nodes? 
 %
@@ -413,11 +411,11 @@ What is even worse is that such inconsistencies might be generated purposely by 
 
 In Highway, the consistency between local views of nodes is achieved with the help of the DAG.
 %
-Roughly speaking: each unit $u$ carries a virtual GHOST vote, depending only on $D(u)$ and possibly the block included in $u$ (if there is one). This vote is determined automatically from the virtual GHOST votes in the "latest messages" under $u$.
+Roughly speaking: each unit $u$ carries a virtual GHOST vote, depending only on $D(u)$ and possibly the block included in $u$ (if there is one). This vote is determined automatically from the virtual GHOST votes in the ``latest messages'' under $u$.
 %
 For brevity, below we denote by $L_V(u)$ the unique unit $v\in L(u)$ created by $V$ in case it exists, otherwise $L_V(u)=\bot$.
 %
-To formally define what a unit $u$ considers as $\vote(u)$, first we define an opinion function $\opinion_u: \cV \to \cB_u$ that is "local to $u$". Here $\cB_u$ consists of all blocks that appear in $\bar{D}(u)$, so it may happen that unit $u$ votes for a block that it carries.:
+To formally define what a unit $u$ considers as $\vote(u)$, first we define an opinion function $\opinion_u: \cV \to \cB_u$ that is ``local to $u$''. Here $\cB_u$ consists of all blocks that appear in $\bar{D}(u)$, so it may happen that unit $u$ votes for a block that it carries.:
 
 
 $$
@@ -437,26 +435,12 @@ One can interpret $\vote(u)$ as the block which the creator of $u$ considers as 
 %
 This does not quite mean that the creator of $u$ is certain that $\vote(u)$ will be ever finalized.
 %
-Instead, each validator maintains for every block a confidence parameter that indicates how likely it is that a given block will be "reverted", i.e., will not end up as part of the blockchain.
+Instead, each validator maintains for every block a confidence parameter that indicates how likely it is that a given block will be ``reverted'', i.e., will not end up as part of the blockchain.
 %
 As we explain in the next section, this confidence parameter is proportional to how many validators would need to equivocate their units, in order to revert a given block.
 
 
-% The Highway protocol applies the ''virtual voting'' principle \cite{}, meaning that a given unit $u$ does not need to explicitly carry a ''vote'' for the selected block, but rather such a vote is computed locally by each validator based only on $u$ justifications.
-
-% Each unit $u$ votes not only for one block, but rather for a whole branch starting at genesis and ending in one of the maximal blocks in $\bar{D}(u)$.
-% Highway adopts the Greedy Heaviest-Observed Sub-Tree rule of voting, or a GHOST rule, for short.
-% It means that the branch voted by each unit is chosen recursively starting from the genesis block $G$, where at each step the candidate that has the most votes of the most recent units is chosen.
-% More formally, we recursively define the function $\vote_k$, corresponding to the vote on $k$-th block in the chain, as follows:
-
-% \begin{itemize}
-%     \item $\vote_0(u) = G$
-%     \item $\vote_k(u) = \min \left(\argmax\limits_{B\in\mathrm{next}(\vote_{k-1}(u))} \ww(\{v \in L (\bar{D}(u)) \mid \vote_{k}(v) = B\})\right)\textrm{,}$
-% \end{itemize}
-
-
 \subsection{Finality condition}\label{sec:finality}
-% \damian{Would be good to write some prose here.}
 
 Having defined the DAG and voting mechanism, we are ready to introduce the rules of finalizing blocks in the Highway protocol.
 By taking advantage of the DAG framework, validators are able to compute finality of each block performing only local operations, namely searching for specific structures in their local copy of the DAG. 
@@ -464,7 +448,7 @@ By taking advantage of the DAG framework, validators are able to compute finalit
 
 \begin{definition}
 A $(q,k)$-summit for the block $B$, relative to protocol state $\sigma$ is a nested sequence of sets of units $(C_0, C_1, C_2, \dots, C_k)$ such that $C_0\supseteq C_1 \supseteq \ldots \supseteq C_k$ and:
-% with quorum size $q$ and height $k$ for a block $B$, or a \emph{$(q,k)$-summit} for a block $B$, is a sequence of sets of units $C_0 \supseteq C_1 \supseteq C_2 \supseteq \dots \supseteq C_k$ satisfying the following properties:
+
 \begin{itemize}
   \item {\bf unanimity.} $\vote(u) \geq B$ for all $u\in C_0$,
   \item {\bf honesty.} $E(\sigma) \cap S(C_0) = \emptyset$,
@@ -474,8 +458,8 @@ A $(q,k)$-summit for the block $B$, relative to protocol state $\sigma$ is a nes
 Where $C'_i = \big\{u\in C_i \mid \text{ there exists } u'\in C_{i+1} \text{ s.t. } S(u) = S(u') \big\}$.
 \end{definition}
 
-Intuitively, summits represent uninterrupted streaks of units produced by big subset of validators (i.e., a quorum) that vote for the same block $B$ --- a structure in DAG after which it is very unlikely that the votes will change, hence summits will be used to finalize blocks.
-In particular, as we will prove in the series of lemmas, checking the following condition will suffice to convince the validator that the given block $B$ will not be retracted, unless more than $t$ validators equivocates:
+Intuitively, summits represent uninterrupted streaks of units produced by a big subset of validators (i.e., a quorum) that vote for the same block $B$ --- a structure in DAG after which it is very unlikely that the votes will change, hence summits will be used to finalize blocks.
+In particular, as we will prove in the series of lemmas, checking the following condition will suffice to convince the validator that the given block $B$ will not be retracted, unless more than $t$ validators equivocate:
 
 $$
    \final(B, \sigma, t) \defeq \begin{cases}
@@ -485,7 +469,7 @@ $$
 $$
 
 Now, based on the above definition we will refer to validator $V$ as having block $B$ \emph{finalized for confidence threshold} $t$ if $t$ is an integer value s.t. $\final(B,\sigma,t) = 1$, where $\sigma$ is $V$'s protocol state.
-Next we prove the key technical lemma, showing that after a summit of certain height and quorum size occurs, it is very unlikely for new units to vote against the vote of the summit. 
+Next we prove the key technical lemma, showing that after a summit of certain height and quorum size occurs, new units will not vote against the vote of the summit.
 
 \begin{lemma}\label{LemmaSummit}
 Let $C = (C_0,\dots,C_k)$ be a $(q,k)$-summit for block $B$, relative to protocol state $\bar{D}(C_0)$, $\sigma\supseteq\bar{D}(C_0)$ be any correct protocol state, and let $u$ be a unit in $\sigma$ such that $D(u)\cap C_k\neq\emptyset$ and $\vote(u)\not\geq B$.
@@ -498,9 +482,9 @@ Then $f\geq (2q-n)(1-2^{-k})$.
 
 Let us define 
 
-$$A(C_0,u) = E(u)\cup \Big(S\big(\{v\in L(u) \mid \vote(v) \not\geq B\}\big) \cap E\big(C_0 \cup D(u)\big)\Big)$$
+$$A(u) = E(u)\cup \Big(S\big(\{v\in L(u) \mid \vote(v) \not\geq B\}\big) \cap E\big(C_0 \cup D(u)\big)\Big)$$
 
-We will prove a slightly stronger thesis, namely that if the conditions of the Lemma are met, then $|A(C_0,u)| \geq (2q-n)(1-2^{-k})$.
+We will prove a slightly stronger thesis, namely that if the conditions of the Lemma are met, then $|A(u)| \geq (2q-n)(1-2^{-k})$.
 
 We proceed with an induction on $k$.
 Note that the $k = 0$ case follows trivially, as $(2q-n)(1-2^{-0}) = 0$, hence we assume that the statement holds for $k-1$.
@@ -509,7 +493,6 @@ Let us assume that there is a unit $u$ satisfying the assumptions of the Lemma, 
 Let us take a minimal such $u$.
 
 Let $u_k\in D(u)\cap C_k$ and $\mathcal{V}_{k-1} = S\big(\{v\in C'_{k-1}\mid v< u \}\big)$.
-% As $\vote(u)\not\geq B$, it must be that $\#\{v\in L(u) \}$
 As $u$ is above some unit in $C_k$, we clearly have $| \mathcal{V}_{k-1}|\geq q$.
 If all of the validators from $\mathcal{V}_{k-1}$ would keep voting for $B$ or for blocks above it, so would $u$, hence some of them must have equivocated or changed vote.
 Let us additionally define $\mathcal{V}^{\mathrm{eq}}_{k-1} =\mathcal{V}_{k-1}\cap  E(u)$ and $\mathcal{V}^{\mathrm{change}}_{k-1} = \mathcal{V}_{k-1}\cap S\Big(\{v\in L(u)\mid \vote(v) \not\geq B\}\Big)$.
@@ -525,32 +508,29 @@ q-|\mathcal{V}^{\mathrm{eq}}_{k-1}|-|\mathcal{V}^{\mathrm{change}}_{k-1}| \leq \
 \end{equation}
 
 \noindent If $\mathcal{V}^{\mathrm{change}}_{k-1}$ is empty, we have the thesis already, so let us assume that $\mathcal{V}^{\mathrm{change}}_{k-1}\neq\emptyset$.
-Let then $u'$ be the minimal unit such that $u'\leq u$, $\vote(u')\not\geq B$ and $D(u')\cap C_{k-1}\neq\emptyset$, which is bound to exist by noneptiness of $\mathcal{V}^{\mathrm{change}}_{k-1}$.
+Let then $u'$ be a minimal unit such that $u'\leq u$, $\vote(u')\not\geq B$ and $D(u')\cap C_{k-1}\neq\emptyset$, which is bound to exist by noneptiness of $\mathcal{V}^{\mathrm{change}}_{k-1}$.
 From the inductive assumption we get 
 
 \begin{equation}\label{EquationSummit2}
-    |A(C_0,u')| \geq (2q-n)(1-2^{-k+1})
+    |A(u')| \geq (2q-n)(1-2^{-k+1})
 \end{equation}
 
-% \begin{equation}\label{EquationSummit2}
-%     \#\Big( E\big(\bar{D}(C_0\cup \{u'\})\big)\cap S(C_0)\Big) \geq (2q-n)(1-2^{-k+1})
-% \end{equation}
 
 Next, connecting Inequalities \ref{EquationSummit1} and \ref{EquationSummit2}, we get
 
 \begin{flalign*}
-|A(C_0,u')\cup\mathcal{V}^{\mathrm{eq}}_{k-1} |+|\mathcal{V}^{\mathrm{change}}_{k-1}|\geq \\
-\frac{|A(C_0,u')|}{2}+\frac{|\mathcal{V}^{\mathrm{eq}}_{k-1}|+2|\mathcal{V}^{\mathrm{change}}_{k-1}|}{2}\geq \\
+|A(u')\cup\mathcal{V}^{\mathrm{eq}}_{k-1} |+|\mathcal{V}^{\mathrm{change}}_{k-1}|\geq \\
+\frac{|A(u')|}{2}+\frac{|\mathcal{V}^{\mathrm{eq}}_{k-1}|+2|\mathcal{V}^{\mathrm{change}}_{k-1}|}{2}\geq \\
 \frac{(2q-n)(1-2^{-k+1})}{2}+\frac{2q-n}{2} = (2q-n)(1-2^{-k})
 \end{flalign*}
 
 \bigskip
 
 Note that each $V\in \mathcal{V}^{\mathrm{change}}_{k-1}$ had to produce a unit in $C_k$, but also a unit witnessing voting for a block competing with $B$. 
-If the latter unit would be above the unit in $C_k$, that would contradict the minimality of $u$, hence $V$ needs to belong to $E\big(C_0\cup D(u)) \big)$ and, in consequence, to $A(C_0,u)$.
-As we also have $A(C_0,u')\subseteq A(C_0,u)$ and $\mathcal{V}^{\mathrm{eq}}_{k-1}\cap \mathcal{V}^{\mathrm{change}}_{k-1}=\emptyset$, the remaining thing to show is that the sets $A(C_0,u')$ and $\mathcal{V}^\mathrm{{change}}_{k-1}$ are disjoint.
+If the latter unit would be above the unit in $C_k$, that would contradict the minimality of $u$, hence $V$ needs to belong to $E\big(C_0\cup D(u)) \big)$ and, in consequence, to $A(u)$.
+As we also have $A(u')\subseteq A(u)$ and $\mathcal{V}^{\mathrm{eq}}_{k-1}\cap \mathcal{V}^{\mathrm{change}}_{k-1}=\emptyset$, the remaining thing to show is that the sets $A(u')$ and $\mathcal{V}^\mathrm{{change}}_{k-1}$ are disjoint.
 
-Suppose that there exists $V\in A(C_0,u')\cap \mathcal{V}^{\mathrm{change}}_{k-1}$.
+Suppose that there exists $V\in A(u')\cap \mathcal{V}^{\mathrm{change}}_{k-1}$.
 As $\mathcal{V}^{\mathrm{change}}_{k-1}\cap E(u)=\emptyset$, it has to be $V\in E\big(C_0\cup D(u')\big)$ and the last $V$'s unit that is strictly below $u'$ must vote for some block $B'$ competing with $B$.
 Let $v$ be this unit voting for $B'$ and $v'\in C'_{k-1}$ - witness of $V$ being in $\mathcal{V}_{k-1}$.
 As $V$ is not seen as an equivocator by $u'$, we have $v'\leq v$, hence we have $\vote(v)\not\geq B$, $D(v)\cap C_{k-1}\neq\emptyset$ and $v\leq u$ while $v<u'$, contradicting the minimality of $u'$.
@@ -600,61 +580,10 @@ But then, by Lemma \ref{LemmaFinality}, we have that $f>\min(t,t)=t$, what finis
 \end{proof}
 
 
-
-% \begin{lemma}[\bf stability]
-% Let $C_0\supseteq\dots\supseteq C_k$ be a $(q,k)$-summit for block $B$ and $u$ be a unit such that $D(u)\cap C_k\neq\emptyset$.
-% Then either $\vote(u) \geq B$ or $\ww(\mathcal{V}_B) \geq \mathrm{stability}(C)$.
-% \end{lemma}
-
-% For a $(q,k)$-summit $C$, we define its stability as
-
-% $$\mathrm{stability}(C) = (2q-\ww(\mathcal{V}))(1-2^{-k}),$$
-
-% The stability of a summit is a measure of credibility given by it to the block $B$.
-% The bigger the stability, the more validators would need to equivocate to change the honest nodes' decision about the block, what is formalized as the following lemma: 
-
-% \begin{lemma}[\bf stability]
-% Let $C_0\supseteq\dots\supseteq C_k$ be a $(q,k)$-summit for block $B$ and $u$ be a unit such that $D(u)\cap C_k\neq\emptyset$.
-% Then either $\vote(u) \geq B$ or $\ww(\mathcal{V}_B) \geq \mathrm{stability}(C)$.
-% \end{lemma}
-
-
-
-
-% $$\mathrm{conf}_V(B, \sigma, q) = \max_{C\in \bar{D}(u), u\in S(V)}\{\conf(C) \mid C \text{ is a summit for } B\}$$
-
-% $$\mathrm{conf}_V(B, \sigma, q) = $$
-
-% \begin{lemma}[\bf block finality]
-% Let $V_1$ and $V_2$ be honest nodes with their respective protocol states $\sigma_1,\sigma_2$, and $B_1$ and $B_2$ be competing blocks. 
-% Then $\min\Big(\final(B_1,\sigma_1,t_1), \final(B_2,\sigma_2, t_2)\Big)\leq \ww(\mathcal{V}_B)$.
-% \end{lemma}
-
-
-% While it is convenient to define the summit in a 'monotonic' way, so that once the $(q,k)$-summit is found in some protocol state, it remains a valid $(q,k)$-summit for every bigger protocol state, in practice it is more efficient for a validator to not include known equivocators while searching for summits in order to finalize blocks. 
-% In consequence, validators using such strategy will not always find maximal summits that exists in their protocol state, but only "honest-so-far summits". 
-% To appropriately capture the security guarantees obtained by validators using such strategy, we need an additional definition of confidence for summits produced by honest-so-far validators in protocol state $\sigma$:
-
-% $$\mathrm{conf_{practical}}(C,\sigma) =  \Big(2q-\ww(\mathcal{V})+2\ww\big(E(\sigma)\big)\Big)\big(1-2^{-k}\big),$$
-
-% Note that the confidence computed by the above definition is monotonic in the sense that whenever an additional equivocator $V$ is revealed in the bigger protocol state $\hat{\sigma}>\sigma$, one can reduce the previously found summit $C$ into $\hat{C}$ by removing units produced by $V$.
-% Then, $q$ will be possibly reduced by one, but it will be compensated by the $2\ww\big(E(\sigma)\big)$ factor in the equation.
-
-% The following refined version of the Lemma \ref{LemmaConfidence} describes the security guarantees obtained by the validators searching for honest-so-far summits:
-
-% \begin{lemma}[\bf practical confidence]
-% Let $C = C_0\cup\dots\cup C_k$ be a $(q,k)$-summit for block $B$ in $\sigma$ consisting solely of honest-so-far validators, and $u$ be a unit such that $D(u)\cap C_k\neq\emptyset$.
-% Then either $\vote(u) \geq B$ or $\ww(\mathcal{V}_B) \geq \conf_{practical}(C)$.
-% \end{lemma}
-
-
-
-% \damian{Notation for validators/units $u,v$, $V$, $\mu, \tau$?}
-
 \subsection{Computability of the Finality Condition}
 In this section we show that for a given state $\sigma$ and a quorum parameter $q$ a straightforward greedy algorithm can be used to find the highest possible $(q,\cdot)$-summit relative $\sigma$. 
 %
-We start by the pseudocode of this algorithm.
+We start with the pseudocode of this algorithm.
 
 \desc{
 \begin{center}
@@ -781,18 +710,18 @@ We are now ready to introduce the strategy of how an honest validator should beh
     {\bf Unit Creation and Reception Strategy by $V\in \cV$ in round $r\in \N$ } 
 \end{center}
 \tcc{Time is measured from the start of round $r$.}
-\tcc{Whenever a new unit is created by $V$, its above all maximal units in the local DAG, it is added to the DAG right away.}
+\tcc{Whenever a new unit is created by $V$, it's above all maximal units in the local DAG, and it is added to the DAG right away.}
 \begin{enumerate}
 \item At time $t=0$: if $V=\leader(r)$
 \begin{enumerate}
-    \item move all units from the {\it Buffer} to the local DAG.
+    \item move all units from the {\it buffer} to the local DAG.
     \item create and broadcast a new unit $u_L$ (referred to as the {\bf proposal unit}). Include in $u$ a new block $B$, choosing its parent so that $\vote(u_L)=B$.
 \end{enumerate}
-\item In the time slot $(0, R/3)$, if $V\neq \leader(r)$: if a new unit $u_L$ created by $\leader(r)$ is received, add it (along with its downset) to the local DAG right away. Immediately after adding $u_L$, create and broadcast a new unit (referred to as the {\bf confirmation unit} by $V$ in this round). All the remaining units received in this slot are placed in the {\it Buffer}.
-\item At time $R/3$ move units from the {\it Buffer} to the local DAG.
+\item In the time slot $(0, R/3)$, if $V\neq \leader(r)$: if a new unit $u_L$ created by $\leader(r)$ is received, add it (along with its downset) to the local DAG right away. Immediately after adding $u_L$, create and broadcast a new unit (referred to as the {\bf confirmation unit} by $V$ in this round). All the remaining units received in this slot are placed in the {\it buffer}.
+\item At time $R/3$ move units from the {\it buffer} to the local DAG.
 \item In the time slot $(R/3, 2R/3)$: whenever a new unit is received, add it to the local DAG right away.
 \item At time $t=2R/3$: create and broadcast a new unit (referred to as the {\bf witness unit} by $V$ in this round).
-\item In the time slot $(2R/3, R)$: all the units received in this slot are placed in the {\it Buffer}.
+\item In the time slot $(2R/3, R)$: all the units received in this slot are placed in the {\it buffer}.
 \end{enumerate}
 }
 
@@ -803,25 +732,18 @@ The witness unit, on the other hand, is always created.
 Thus in every round, the round leader creates $2$ units: the proposal unit, and the witness unit, and a non-leader creates either $1$ (the witness unit) or $2$ units (the confirmation and the witness unit).
 
 
-% \begin{lemma}\label{lemma:final_follow}
-% Let $t\geq f$ be a confidence parameter and assume that the number of crashing nodes is $c\leq n-t-\frac{n+t+1}{2}$. If an honest validator reaches a state $\sigma$ such that $\final(\sigma, B, t)$ for some block $B$, then after some point in time, for every state $\sigma'$ reached by any honest validator it holds $\final(\sigma', B, t)$.
-% \end{lemma}
-
 \begin{lemma}\label{lemma:final_follow}
 Let $t\geq f$ be an integer confidence parameter and assume that the number of crashing nodes is $c< \frac{n-3t}{2}$. If an honest validator reaches a state $\sigma$ such that $\final(\sigma, B, t)$ for some block $B$, then after some point in time, for every state $\sigma'$ reached by any honest validator it holds $\final(\sigma', B, t)$.
 \end{lemma}
 
 \begin{proof}
-Denote by $H$ the set of all validators that are neither byzantine nor crashing. As $n$ and $t$ are integer by definition, we have $c\leq \frac{n-3t-1}{2}$ and thus
+Denote by $H$ the set of all validators that are neither Byzantine nor crashing. As $n$ and $t$ are integer by definition, we have $c\leq \frac{n-3t-1}{2}$ and thus
 %
 
 \begin{equation}\label{eq:size_H}
  |H|=n-f-c\geq n-t-\inparen{\frac{n-3t-1}{2}} =  \frac{n+t+1}{2}.
 \end{equation}
 
-% \begin{equation}\label{eq:size_H}
-%  |H|=n-f-c\geq n-t-\inparen{n-t -  \frac{n+t+1}{2} } =  \frac{n+t+1}{2}.
-% \end{equation}
 %
 Note first that after $\gst$ each validator $V\in H$ eventually reaches a state that fully contains $\sigma$.
 %
@@ -835,12 +757,11 @@ For $r\geq r_0+1$ we have the following properties satisfied by any $u\in \sigma
     \item $u$ contains in its downset all units $u^W_{r-1}$ for $W\in H$,
     \item $\vote(u) \geq B$.
 \end{enumerate}
-The former property follows from the fact that $r_0$ happened after $\gst$ and the latter is a consequence of Lemma~\ref{LemmaSummit}: indeed finality was reached because of the existence of a particular summit -- each unit $u$ build beyond this summit must then vote for a block  $\geq B$, thus $\vote(u)\geq B$.
+The former property follows from the fact that $r_0$ happened after $\gst$ and the latter is a consequence of Lemma~\ref{LemmaSummit}: indeed finality was reached because of the existence of a particular summit -- each unit $u$ built beyond this summit must then vote for a block  $\geq B$, thus $\vote(u)\geq B$.
 %
 It is now easy to see that the family of units $\{u_r^V\}$ can be used to build arbitrarily high summits.
 %
 More specifically, given a state $\sigma$ define the following sets:
-% $$C_i:=\sigma\cap \{u_{r}^V: V\in H, r\geq r_0+i\} ~~~~~~~\mbox{for }i\geq 0.$$
 $$C_i:= \inbraces{u \in \sigma: S(u)\in H, u\geq u_{r_0+i}^{S(u)}} ~~~~~~~\mbox{for }i\geq 0,$$
 thus the set $C_i$ is the union of chains of units that begin with $u_{r_0+i}^V$ for each validator $V\in H$.
 %
@@ -862,9 +783,6 @@ Consequently, $\final(B, \sigma', t)$ holds for each honest validator's state $\
 
 Proof of Theorem \ref{thm:liveness}:
 
-% \begin{lemma}\label{lem:live_technical}
-% Let $t\geq f$ be a confidence parameter and assume that the number of crashing nodes is $c\leq n-t-\frac{n+t+1}{2}$. Then for every block height $h$, there exists a block $B_h$ that is eventually finalized by each honest validator.
-% \end{lemma}
 
 \begin{proof}
 Note that by Lemma~\ref{lemma:final_follow} whenever even a single validator finalizes a block then all the others, eventually, will follow in finalizing exactly the same block.
@@ -872,7 +790,7 @@ Note that by Lemma~\ref{lemma:final_follow} whenever even a single validator fin
 Suppose thus, for the sake of contradiction that there exists a run of the protocol such that for some height $h\geq 0$, some block $B_h$ is finalized, but no block is ever finalized (by any honest validator) at height $h+1$.
 %
 
-Denote by $H$ the set of all validators that are neither byzantine nor crashing. As in the proof of Lemma~\ref{lemma:final_follow} we have that $|H|\geq  \frac{n+t+1}{2}.$
+Denote by $H$ the set of all validators that are neither Byzantine nor crashing. As in the proof of Lemma~\ref{lemma:final_follow} we have that $|H|\geq  \frac{n+t+1}{2}.$
 %
 Let $r_0$ be a round index such that:
 \begin{enumerate}
@@ -895,7 +813,7 @@ Consider now any validator $V\in H$ and let $u_V$ be the first of the units crea
 We claim that $$D(u_V) = \sigma_0 \cup \bar{D}(u_0).$$
 This follows from the fact that $\gst$ has passed and from the unit creation and reception strategy.
 %
-Indeed: between time $2R/3$ in round $r_0-1$ when the previous unit $\bar{u}_V$ by $V$ was created, and the moment $<R/3$ in round $r_0$ when $V$ received $u_0$ ($R/3=\Delta$ hence $V$ is guaranteed to receive $u_0$ before time $R/3$), $V$ did not include in its DAG any other units then $u_0$ and its downset.
+Indeed: between time $2R/3$ in round $r_0-1$ when the previous unit $\bar{u}_V$ by $V$ was created, and the moment $<R/3$ in round $r_0$ when $V$ received $u_0$ ($R/3=\Delta$ hence $V$ is guaranteed to receive $u_0$ before time $R/3$), $V$ did not include in its DAG any other units than $u_0$ and its downset.
 %
 Moreover, $V_L$ received $\bar{u}_V$ before creating $u_0$ and hence $\bar{u}_V \in D(u_0)$, and thus the claim follows.
 
@@ -914,18 +832,12 @@ Consequently, $\final(B, \sigma', t)$ holds for each honest validator's state $\
 Since this gives us a finalized block of height $\geq h+1$, we reach a contradiction with the assumption that no block of height $h+1$ is ever finalized.
 \end{proof}
 
-% \begin{remark}
-% \damian{Change the language a bit and place this appropriately.}
-% We do not quantify what eventually means, because in the asynchronous model, time has no meaning. However, one can easily see that after GST is reached, eventually translates to "$O(1)$ rounds later".
-
-% \end{remark}
-
 \subsection{Communication Complexity}
-The so far described protocol, in the absence of byzantine nodes is rather efficient when it comes to communication complexity.
+The so far described protocol, in the absence of Byzantine nodes is rather efficient when it comes to communication complexity.
 %
 Indeed, each validator produces and broadcasts $2$ units per round on average, and downloads the $\approx 2n$ units created by other validators in the same round.
 %
-The situation becomes much more tricky if some validators are byzantine and try to make the communication complexity large, to possibly exhaust resources of honest validators, and cause crashes. 
+The situation becomes much more tricky if some validators are Byzantine and try to make the communication complexity large, to possibly exhaust resources of honest validators, and cause crashes. 
 %
 One possibility for that would be to send a large number of invalid or malformed messages to honest validators -- while such attacks can be dangerous, they can be dealt with by simply discarding all such incorrect messages that are being received.
 %
@@ -935,7 +847,7 @@ As it turns out, the latter type of attack needs to be addressed already in the 
 %
 One can distinguish two basic {\it spam patterns} of this type that the dishonest validators can try:
 \begin{itemize}
-    \item {\bf Vertical Spam.} A dishonest validator does not equivocate but produces new units at a fast pace, violating the Unit Creation and Reception Strategy. This type of spam is easy to deal with, as one can compute exactly how many units should have a validator produced by a given moment in time. And if we are receiving more, then we can simply ignore them. 
+    \item {\bf Vertical Spam.} A dishonest validator does not equivocate but produces new units at a fast pace, violating the Unit Creation and Reception Strategy. This type of spam is easy to deal with, as one can compute exactly how many units a validator should have produced by a given moment in time. And if we are receiving more, then we can simply ignore them. 
     \item {\bf Horizontal Spam.} A dishonest validator or a group of dishonest validators produce a large number of equivocations and send them in parallel to different honest validators to make the DAG large. These would by definition be equivocations for which the attacker might be punished (likely by slashing its stake), but they could potentially be disruptive nonetheless.
 \end{itemize}
 The latter type of attack is by far more dangerous and harder to deal with.
@@ -1004,7 +916,6 @@ We say that a unit $u$ is endorsed if $>n/2$ validators $V$ sent endorsements fo
 %
 Note that being endorsed is a subjective property as it depends on the local view of a validator.
 %
-% However, by making sure that endorsements are reliably broadcast (by any reliable broadcast protocol), we can guarantee that once a unit $u$ is endorsed in a local view of an honest validator $V$, it will also be eventually seen as endorsed by every honest validator.
 
 \desc{
 
@@ -1020,7 +931,7 @@ Note that being endorsed is a subjective property as it depends on the local vie
 \end{enumerate}
 }
 
-We emphasize that the above strategy for sending endorsements is rather naive, as it sends endorsements for all "honest" units.
+We emphasize that the above strategy for sending endorsements is rather naive, as it sends endorsements for all ``honest'' units.
 %
 This version allows for a simple analysis, yet might be slightly inefficient in practice.
 %
@@ -1048,10 +959,11 @@ Using the notion of naive citation, we introduce a validity criterion for units 
 \end{center}
 A unit $u$ by validator $V$ is considered incorrect if there is an equivocation $(v_1, v_2)$ (created by some validator $W$) and two units $u_1, u_2\leq u$ created by $V$ such that 
 $u_1 >_n v_1$  and $u_2 >_n v_2.$
-% $v_1 <_n u_1$  and $v_2 <_n u_2.$
 }
 
 Since, as previously noted, endorsed units, and thus also naive citations are subjective notions, also satisfaction of LNC by a given unit might depend on the local view of a validator.
+%
+Importantly, the status of a unit for a given validator can change only one way - if a given unit satisfies LNC, it will never cease to satisfy it, if a unit is endorsed, it will never cease being endorsed, and if a unit is not cited naively by another unit $v$, it will never be considered to be cited naively by $v$.
 %
 Thus it is important to suitably modify the unit reception strategy so that units upon which a given validator cannot yet build its own unit without breaking LNC are kept in a buffer. 
 Once such a unit gathers enough endorsements, it can be removed from the buffer and added to the DAG\footnote{To prevent unbounded growth of a buffer, we clear it at the end of each era as defined in Subsection \ref{sec:eras}}.
@@ -1066,9 +978,6 @@ More specifically, the following theorem states that we can bound the number of 
 Assume that $f<\frac{n}{3}$. If $u$ is an $N$-th unit created by an honest validator, $u$ is above at most $O(n N(1 + f_{\mathrm{equiv}}))$ other units, where $f_{\mathrm{equiv}}=|E(D(u))|$.
 \end{theorem}
 
-% \begin{theorem}\label{thm:limit_spam}
-% Assume that $f<\frac{n}{3}$. Each unit $u$ created by an honest validator in the $N$th round of the protocol justifies at most $O(n N(1 + f_{\mathrm{equiv}}))$ other units, where $f_{\mathrm{equiv}}=|E(D(u))|$.
-% \end{theorem}
 \noindent 
 The following subsection is devoted to proving Theorem~\ref{thm:limit_spam}.
 
@@ -1153,7 +1062,7 @@ Further, whenever a validator is in the {\it suspicious} mode, we instruct it to
 
 For the proof of the main liveness result -- Theorem~\ref{thm:liveness} -- to go through, we need the following requirement to be satisfied: 
 
-\noindent {\bf Rapid Endorsement Spread:} "Whenever a unit $u$ is created by an honest validator $V$ after $\gst$, after $R/3$ time, each unit in $D(u)$ that was endorsed in $V$'s local view at the time of creating $u$ is also endorsed in the local view of every honest validator."
+\noindent {\bf Rapid Endorsement Spread:} ``Whenever a unit $u$ is created by an honest validator $V$ after $\gst$, after $R/3$ time, each unit in $D(u)$ that was endorsed in $V$'s local view at the time of creating $u$ is also endorsed in the local view of every honest validator.''
 
 To guarantee the above condition the simplest (but perhaps not the most efficient) way would be to instruct the honest validators to broadcast a set of $>n/2$ endorsements of a particular unit, after it becomes endorsed in their local view.
 %
@@ -1164,7 +1073,7 @@ Various more efficient strategies here are possible, we discuss some more practi
 \subsection{Dynamic Round Lengths}
 When defining the base version of our protocol we divided the time into fixed length rounds.
 %
-The length of a round was picked so as to make sure that in each such round, even assuming worst case delays, a few communication "round trips" between honest validators would be possible.
+The length of a round was picked so as to make sure that in each such round, even assuming worst case delays, a few communication ``round trips'' between honest validators would be possible.
 %
 On the theoretical side, the worst case message delay $\Delta$ was available from the partial synchrony assumption in the {\it known $\Delta$ flavour}, as initially defined in~\cite{DLS88}.
 %
@@ -1176,14 +1085,14 @@ In practice, one can estimate an appropriate $\Delta$ using experiments, yet the
 
 This motivates the use of dynamic round lengths so that the protocol by itself adapts to the current network conditions.
 %
-At a theoretical layer this "approach" corresponds to the {\it unknown $\Delta$ flavour} in the original definition of partial synchrony by~\cite{DLS88}.
+At a theoretical layer this ``approach'' corresponds to the {\it unknown $\Delta$ flavour} in the original definition of partial synchrony by~\cite{DLS88}.
 %
 The theoretical model states that there is some fixed, worst case message delay $\Delta$, yet it is not available at the start of the protocol execution.
 %
 Even though these two models of partial synchrony are equivalent via almost black-box reductions, we present here a custom version of our protocol for the unknown $\Delta$ model that is optimized for practical implementations.
 
 \noindent {\bf Rules for changing round lengths.}
-We measure time in milliseconds since the epoch\footnote{Unix time: number of milliseconds since the beginning of 1970, UTC}.
+We measure time in milliseconds since the epoch\footnote{Unix time: number of seconds since the beginning of 1970, UTC, but millisecond resolution is more suitable for this purpose}.
 %
 An integer timestamp is called a \emph{tick}.
 %
@@ -1199,7 +1108,7 @@ We assume that units have timestamps, i.e., for a unit $u$, $T(u)$ is the time w
 
 Each validator $v$ maintains a private parameter $n_v(i) \in \mathbb{N}$ (called the {\it round exponent}) that is updated periodically. Formally, the map $n_v: \mathbb{N} \rightarrow \mathbb{N}$ assigns to each tick number the round exponent that the validator $v\in \cV$ should use at this particular tick.
 %
-Below we give a strategy on how to select $n_v$, but we always assume that $n_v (i) = n_v (i - 1)$ unless $i$ is a multiple of both $2^{n_v(i)}$ and $2^{n_v(i-1)}$. In other words, we assume that the parameters are kept constant for time windows of $2^{n_v(i)}$ ticks, from $j$ to $j + 2^{n_v(i)} - 1$, where $j \leq i$ is maximal such that it divides $2^{n_v(i)}$. %Furthermore, there are parameters $0 < R_0 \leq R_1 < 1$.
+Below we give a strategy on how to select $n_v$, but we always assume that $n_v (i) = n_v (i - 1)$ unless $i$ is a multiple of both $2^{n_v(i)}$ and $2^{n_v(i-1)}$. In other words, we assume that the parameters are kept constant for time windows of $2^{n_v(i)}$ ticks, from $j$ to $j + 2^{n_v(i)} - 1$, where $j \leq i$ is maximal such that it divides $2^{n_v(i)}$. 
 %
 
 
@@ -1231,43 +1140,38 @@ However, the round length adjustment strategy is designed in such a way so that 
 \begin{center}
     {\bf Round Exponent Maintenance Strategy for $V\in \cV$} 
 \end{center}
-% \damian{I wrote a slightly simpler version than what was written here before. I don't think it matters much how this is done. Feel free to roll it back to the previous version. }
 \begin{enumerate}
 \item At tick $i=0$, initialize $n_v(j)= \nmin$ for all $j$. Initialize $\cntsucc=0$.
 \item At tick $i>0$,  let $m:=n_v(i)$. Whenever $i$ is divisible by $2^{m+1}$:
-% \item At tick $i>0$,  let $m:=n_v(i)$. Whenever $i$ is divisible by $2^{m+1}$ and $n_v$ did not change in $C$ previous rounds (i.e., it was constant in the interval $[i-C2^{m+1}, i-1]$):
 \begin{enumerate}
         \item Let $b_{\mathrm{fin}}$ denote the number of blocks finalized with confidence $t_0$ during the last $C$ rounds,
-        \item if $b_{\mathrm{fin}}<C_{\mathrm{fail}}$ then set $n_v(j)=\min(m+1, \nmax)$, for all $j\geq i$,
-        \item if $b_{\mathrm{fin}}>C_{\mathrm{succ}}$ then increment $\cntsucc=\cntsucc+1$, otherwise set $\cntsucc=0$.
+        \item if $b_{\mathrm{fin}}\leq C_{\mathrm{fail}}$ then set $n_v(j)=\min(m+1, \nmax)$, for all $j\geq i$,
+        \item if $b_{\mathrm{fin}}\geq C_{\mathrm{succ}}$ then increment $\cntsucc=\cntsucc+1$, otherwise set $\cntsucc=0$.
         \item If $i$ is divisible by $C2^{m+1}$ and $\cntsucc\geq D$, set $n_v(j)=\max(m-1, \nmin)$, for all $j\geq i$. Set $\cntsucc=0$.
 \end{enumerate}
 \end{enumerate}
 }
 
 
-In practice $t_0$ should probably be much lower than the confidence threshold used for "safety", for instance $t_0\approx 0.01$.
+In practice $t_0$ should probably be much lower than the confidence threshold used for ``safety'', for instance $t_0\approx 0.01$.
 %
-Even if in a single round, the block proposed by the leader gets finalized with the lower confidence $t_0$, if there are enough honest validators this confidence will increase in the future, as the summit grows in height. The constants $C_{\mathrm{fail}}, C_{\mathrm{succ}}, C, D $ are chosen so as to make sure that the "correct" round exponent is learned by the validators based on the "finality rate" feedback.
+Even if in a single round, the block proposed by the leader gets finalized with the lower confidence $t_0$, if there are enough honest validators this confidence will increase in the future, as the summit grows in height. The constants $C_{\mathrm{fail}}, C_{\mathrm{succ}}, C, D $ are chosen so as to make sure that the ``correct'' round exponent is learned by the validators based on the ``finality rate'' feedback.
 %
 Example values of these constants could be $(C_{\mathrm{fail}}, C_{\mathrm{succ}},C) = (10, 32, 40)$ and $D=3$.
-
-% \damian{I don't think we should write down any arguments for liveness here.}
-
 
 \subsection{Eras}\label{sec:eras}
 Since the Highway protocol is meant for creating and maintaining a blockchain, once run (initialized) it is supposed to run forever, without stops.
 %
 Consequently, the validators are forced to store the whole DAG, even the units that were created at the very beginning of the protocol execution.
 %
-Erasing "old" parts of the DAG is not safe, as (likely dishonest) validators might directly cite in their recent units some units that are very old.
+Erasing ``old'' parts of the DAG is not safe, as (likely dishonest) validators might directly cite in their recent units some units that are very old.
 %
 
-When talking about storing issue, it is important to emphasize that clearly, the blockchain must be stored anyway, and this is a cost that is impossible to avoid.
+When talking about the storage issue, it is important to emphasize that clearly, the blockchain must be stored anyway, and this is a cost that is impossible to avoid.
 %
-However, intuitively, nothing should stop us from erasing old "metadata", i.e., units that have been used to finalize certain blocks, and thus are not useful anymore.
+However, intuitively, nothing should stop us from erasing old ``metadata'', i.e., units that have been used to finalize certain blocks, and thus are not useful anymore.
 %
-This issue becomes all the more serious after realizing that for large committees of validataros, this "metadata" might likely require more space than the blockchain itself.
+This issue becomes all the more serious after realizing that for large committees of validators, this ``metadata'' might likely require more space than the blockchain itself.
 %
 What is even worse is that such a DAG must be kept in RAM and not on disk.
 %
@@ -1287,15 +1191,17 @@ This also helps a lot with equivocation spam attacks, as equivocators caught in 
 %
 The honest nodes start a new era in the {\it relaxed} mode and thus do not need to send endorsements because of past equivocations anymore.
 
+One additional benefit of using eras is that it allows to change the validator set according to some prespecified rules, and hence move the protocol towards the permissionless model. 
+
 \subsection{Sending Less Endorsements}
 Recall that the original endorsement strategy that we introduced in Section~\ref{sec:endorse} was very simple: after seeing an equivocation, endorse every unit by non-equivocating validators.
 %
 While it allows for quite simple arguments that liveness is preserved, it also introduces a non-negligible overhead in case when equivocations are detected in a particular era.
 %
 
-Below we present a refined strategy that still guarantees that no honest validator gets ever stuck because of lack of endorsements of its own, honest units.
+Below we present a refined strategy that still guarantees that no honest validator ever gets stuck because of lack of endorsements of its own, honest units.
 %
-At the same time, this strategy allows to send much less endorsements.
+At the same time, this strategy allows to send much fewer endorsements.
 
 \desc{
 
@@ -1321,19 +1227,19 @@ In a practical scenario, after an equivocation by a validator $W$ is detected at
 %
 The above strategy requires, in such a case, sending endorsements only for units created in these few rounds that happen after round $r$.
 %
-The honest units that are created later, never cite any "new" units by $W$ and thus do not require endorsements.
+The honest units that are created later, never cite any ``new'' units by $W$ and thus do not require endorsements.
 
 \subsection{Weighted Consensus}
 
 So far it has been assumed that the opinion of every validator is equally important in the process of achieving consensus.
-In this subsection, we describe the modifications allowing the Highway protocol to be run in a scenario where each validator has an associated integer weight, corresponding to its voting power -- a useful version for example when constructing a proof-of-stake blockchain. 
+In this subsection, we describe the modifications allowing the Highway protocol to be run in a scenario where each validator has an associated integer weight, corresponding to its voting power -- a useful version for example when constructing a Proof of Stake blockchain. 
 
 Let the sum of all validator weights equals $N$, and the function $\ww(V)$ denotes the weight associated with validator $V$.
-In such version, the function $\mathrm{total}$ being the basis for the GHOST rule has to be replaced with the one counting the \emph{total weight} of validators supporting a given option, instead of their number. 
+In such a version, the function $\mathrm{total}$ being the basis for the GHOST rule has to be replaced with the one counting the \emph{total weight} of validators supporting a given option, instead of their number. 
 Similarly, the \textbf{density} condition in the definition of the summit needs to be replaced with the version bounding total weight of the set of validators  $S\big(\bar{D}(u) \cap C'_i)\big)$, instead of their number. 
 After these changes are introduced, Theorems \ref{thm:finality} and \ref{thm:liveness} remain true without any changes, as they do not deal with number of validators, and the proofs do not take advantage of the equal validator weight. 
 
-Note that while the finality in such modified scenario is purely a function of validator weights, the communication complexity remain dependent on the total \emph{number} of validators -- every validator needs to download unit of every other validator, no matter how small its weight is.
+Note that while the finality in such a modified scenario is purely a function of validator weights, the communication complexity remain dependent on the total \emph{number} of validators -- every validator needs to download the units of every other validator, no matter how small its weight is.
 For this reason, when desigining the blockchain system, the number of validators should be considered as the main factor influencing latency and throughput, not their weights and dependencies between them. 
 
 
