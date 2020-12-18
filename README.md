@@ -12,11 +12,11 @@ A pre-generated version of the PDF can be found on the
 [GitHub releases page](https://github.com/CasperLabs/highway/releases).
 To generate the PDf yourself you must have
 [LaTeX](https://www.latex-project.org/get/#tex-distributions) and
-[Biber](http://biblatex-biber.sourceforge.net/) installed on your platform then run
+BibTex installed on your platform then run
 
 ```shell
 pdflatex -halt-on-error highway && \
-  biber highway && \
+  bibtex highway && \
   pdflatex -halt-on-error highway && \
   pdflatex -halt-on-error highway
 ```
