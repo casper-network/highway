@@ -18,7 +18,7 @@ name: highway-latex
 steps:
 - name: build-pdf
   commands:
-  - "pdflatex -halt-on-error highway && biber highway && pdflatex -halt-on-error highway && pdflatex -halt-on-error highway"
+  - "pdflatex -halt-on-error highway && bibtex highway && pdflatex -halt-on-error highway && pdflatex -halt-on-error highway"
   image: "blang/latex:ctanfull"
   when:
     event:
@@ -38,7 +38,7 @@ name: highway-release-tag
 steps:
 - name: build-pdf-tag
   commands:
-  - "pdflatex -halt-on-error highway && biber highway && pdflatex -halt-on-error highway && pdflatex -halt-on-error highway"
+  - "pdflatex -halt-on-error highway && bibtex highway && pdflatex -halt-on-error highway && pdflatex -halt-on-error highway"
   image: "blang/latex:ctanfull"
 
 - name: github_publish_release_artifacts
