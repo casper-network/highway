@@ -8,7 +8,7 @@
 \usepackage{a4wide}
 \usepackage{hyperref}
 \usepackage{authblk}
-\usepackage{natbib}
+%\usepackage{natbib}
 %\usepackage{biblatex}
 \usepackage{xcolor}
 \usepackage[ruled, linesnumbered, noend]{algorithm2e}
@@ -29,12 +29,10 @@
 \author[2]{Andreas Fackler}
 \author[3]{Adam Gągol}
 \author[4]{Damian Straszak}
-\author[5]{Vlad Zamfir}
 
 \affil[1]{Computer Science and Engineering Department, UC San Diego}
-\affil[2]{CasperLabs AG}
+\affil[2]{CasperLabs LLC}
 \affil[3,4]{Cardinal Cryptography}
-\affil[5]{Ethereum Research}
 
 
 \newtheorem{proposition}{Proposition}
@@ -130,7 +128,7 @@ Having finality defined this way, Highway offers flexibility with respect to the
 
 Since the introduction of Bitcoin~\cite{nakamoto2008bitcoin} and the concept of a decentralized, tamperproof database -- a blockchain -- a number of different paradigms have been developed to design such databases.
 %
-Recently, significant popularity has gained the idea of building such systems based on PoS (Proof of Stake).
+Recently, the idea of building such systems based on PoS (Proof of Stake) has gained significant popularity.
 %
 While in the original PoW (Proof of Work, as used in Bitcoin) mechanism that is used for incentivizing participation and securing the system, the voting power of a participant is proportional to the amount of computational power possessed, in PoS the voting power is proportional to the amount of tokens (digital currency specific to this system).
 %
@@ -139,7 +137,7 @@ A popular choice in such systems is then to periodically delegate a fixed size c
 This way of building a blockchain has two substantial advantages over vanilla PoW systems such as Bitcoin: 1) it allows to run one of the classical permissioned consensus protocols that have been developed over the last 4 decades, 2) it allows to not only reward nodes for participation but also penalize misbehavior, by slashing security deposits of the offending committee members.
 %
 
-There has been recently tremendous progress in the design of permissioned consensus protocols that can be used as core engines in such PoS blockchains~\cite{BG17,YMRGA19,AMNRY19,BKM18,CS20,BKM18,GAGMPRSTT19,zamfir2018casper,GLSS19}.
+There has been recently tremendous progress in the design of permissioned consensus protocols that can be used as core engines in such PoS blockchains~\cite{AMNRY19,BKM18,BG17,CS20,GLSS19,GAGMPRSTT19,YMRGA19,zamfir2018casper}.
 %
 A vast majority of them are designed in the partially synchronous BFT model~\cite{DLS88} which asserts that communication between nodes becomes eventually synchronous and that no more than a given fraction of nodes, say $1/3$ (which is optimal in this model), are dishonest and may violate the protocol in an arbitrary way.
 %
@@ -160,8 +158,6 @@ This is a consequence of the financial incentives for honest participation.
 Indeed, it is in the best interest of committee members to make sure they actively participate in the consensus protocol, as they are paid a salary for honest work and are penalized for being offline or not contributing enough to the protocol progress.
 %
 In fact, because of penalties for protocol offences, it is highly unlikely that an adversary tries an attack which is not guaranteed to succeed, as otherwise it risks significant losses.
-For the proof of the main liveness result -- Theorem~\ref{thm:liveness} -- to go through, we need the following requirement to be satisfied: 
-
 %
 Therefore, with the only exception of large-scale, coordinated attacks that are intended to bring down the whole system, one should always expect almost all nodes to behave honestly.
 
@@ -174,7 +170,7 @@ The security of Highway is still formalized on grounds of the partially synchron
 However, on top of that, Highway offers the following two features that make it particularly attractive in real-world deployments.
 %
 First of all, in periods of honest participation of a large fraction of nodes, it allows to reach finality of blocks with ``confidence'' much higher than the typical threshold of $1/3$.
-To give an example, if a block reaches finality confidence of $0.8$ (which is possible in Highway) then at least $0.8$ fraction of the nodes would need to violate the protocol in order to revert the block from the chain.
+To give an example, if a block reaches finality confidence of $0.8$ (which is possible in Highway) then at least $80\%$ of the nodes would need to violate the protocol in order to revert the block from the chain.
 %
 This stands in contrast with the classical notion of finalization that is binary: either a block is finalized (this means finality confidence of $1/3$) or it is not.
 %
@@ -186,9 +182,9 @@ Flexibility then means that despite these differences in configuration, all the 
 %
 A practical consequence is that nodes with lower security thresholds might reach finality much faster than nodes with higher thresholds, but as long as both these nodes' assumptions are satisfied they finalize the same blocks and stay in agreement.
     
-Technically, Highway can be categorized as a DAG-based protocol~\cite{moser1999byzantine,zamfir2018casper,baird2016hashgraph,GLSS19}, in which nodes jointly maintain a common history of protocol messages, forming a directed acyclic graph representing the causality order.
+Technically, Highway can be categorized as a DAG-based protocol~\cite{baird2016hashgraph,GLSS19,moser1999byzantine,zamfir2018casper}, in which nodes jointly maintain a common history of protocol messages, forming a directed acyclic graph representing the causality order.
 %
-In its design, Highway derives from the CBC-Casper protocol~\cite{zamfir2018casper} and significantly improves upon it by the use of a new finality mechanism, message creation schedule and spam prevention mechanism.
+In its design, Highway derives from the CBC-Casper approach~\cite{zamfir2018casper} and significantly improves upon it by the use of a new finality mechanism, message creation schedule and spam prevention mechanism.
 %
 We believe that the conceptual simplicity of DAG-based protocols along with the desirable practical features of the Highway protocol make it a solid choice for a consensus engine in a Proof of Stake-based blockchain. 
 
@@ -205,7 +201,7 @@ Our model makes the following assumptions:
 \begin{itemize}
     \item\emph{(Reliable point-to-point communication)}
     We assume that channels do not drop messages and all messages in the protocol are authenticated by digital signature of the sender.
-    \item\emph{(Partially synchronous network)} There exists a publicly known bound $\Delta$ and an unknown Global Stabilization Time (GST) so that after GST, whenever a validator sends a message, it reaches the receipient within time $\Delta$. Additionally, we assume that validators have bounded clock drift\footnote{Note that bounded clock drift can be achieved in any partially synchronous network by means of Byzantine clock synchronization such as \cite{DLS88}}. 
+    \item\emph{(Partially synchronous network)} There exists a publicly known bound $\Delta$ and an unknown Global Stabilization Time (GST) so that after GST, whenever a validator sends a message, it reaches the recipient within time $\Delta$. Additionally, we assume that validators have bounded clock drift\footnote{Note that bounded clock drift can be achieved in any partially synchronous network by means of Byzantine clock synchronization such as \cite{DLS88}}. 
     Such version of partial synchrony is known as a \emph{known $\Delta$ flavour}, for the discussion on the version without publicly known $\Delta$, see Subsection \ref{sec:dynamicrounds}.
     \item\emph{(Byzantine faults)} We assume that $f$ out of $n$ validators are under total control of an adversary, and hence can arbitrarily deviate from the protocol. We do not make a global assumption on the relation between $f$ and $n$, as safety and liveness require different bounds, and the latter have an interaction with number of crashing nodes as well.
     \item\emph{(Crashing faults)} We assume that $c$ out of $n$ nodes can become permanently unresponsive at some point in the protocol execution.
@@ -221,12 +217,12 @@ The first one, the \emph{genesis block}, is part of the protocol definition.
 In Highway, as the set of validators is either constant or subject only to very controlled changes (between different eras, see Subsection \ref{sec:eras}), specific validators are directly appointed to construct a block in a given time slot.
 They do so by enclosing transactions from their local queue and hash of the block that they believe should be the predecessor.
 
-As it may happen that validator does not refer to the last constructed block (either intentionally, or due to the network failure), the set $\mathcal{B}$ of blocks is a tree, with a unique path leading from each block to the root: the genesis block $G$. 
+As it may happen that a validator does not refer to the last constructed block (either intentionally, or due to a network failure), the set $\mathcal{B}$ of blocks is a tree, with a unique path leading from each block to the root: the genesis block $G$. 
 The main goal of the consensus protocol in such a scenario is to choose a single branch from such a tree.
 For a block $B$, we refer to all the blocks that are on the other branches as \emph{competing} with $B$, as if any of them would be chosen, $B$ could not.
 
 
-\subsection{Practical challenges}
+\subsection{Practical Challenges}
 
 {\bf Strong optimistic finality.} While since the initial definition of the partially synchronous model by Dwork, Lynch and Stockmeyer~\cite{DLS88} a vast body of research was created to optimize various parameters of protocols in this setting, most of it was written under the semi-formal assumption that the existence of more than $n/3$ dishonest nodes predates the existence of any provable guarantees for such protocols.
 Such an assumption stems from the fact that, as proven in the original paper, it is not possible for a partially synchronous protocol to guarantee both liveness and finality if $n<3f+1$.
@@ -244,7 +240,7 @@ In Highway, however, there is no need to agree upon a common threshold, so every
 Besides eliminating the need to make an additional consensus on this particular hyperparameter, one important implication of such feature is that it allows validators to play slightly different roles in the ecosystem -- for example some validators may deal mainly with finalizing relatively small transactions, in which case small latency is more important than very high security (and, as will become apparent after the protocol is presented, reaching higher thresholds usually takes more time), while others can prioritize safety over latency\footnote{In fact, in Highway the choice of specific threshold influences only local computations performed by a validator on the output of its communication with other validators. Hence, if validators would hand such communication logs to outside observers, observers could reinterpret the logs using different thresholds.} .
 
 
-\subsection{Our contribution}
+\subsection{Our Contribution}
 We present Highway - a consensus protocol achieving strong optimistic finality that is flexible by allowing validators to use different confidence thresholds to convince themselves that a given block is ``finalized'' (both confidence threshold and finality will be properly defined in Subsection \ref{sec:finality}). 
 
 Unless some validators actively deviate from the protocol, the finality of a block can only increase for a given validator, which intuitively corresponds to the ever-increasing number of confirmations for a block in PoW scenario.
@@ -265,9 +261,9 @@ For every confidence threshold $0 \leq t < \frac{n}{3}$, if $f\leq t$ and $c< \f
 \end{theorem}
 
 
-\subsection{Related work}
+\subsection{Related Work}
 
-The line of work on partially synchronous protocols was initiated with the seminal work of Dwork, Lynch and Stockmeyer \cite{DLS88}, and gained popularity with the introduction of PBFT\cite{CL99} protocol and its numerous versions\cite{BKM18, KADCW09, MNR19}. 
+The line of work on partially synchronous protocols was initiated with the seminal work of Dwork, Lynch and Stockmeyer \cite{DLS88}, and gained popularity with the introduction of PBFT\cite{CL99} protocol and its numerous versions~\cite{BKM18,KADCW09,MNR19}. 
 Classically, protocols in this model attain resilience against less than $n/3$ malicious nodes, due to a known bound stating that is it not possible to provide both safety and liveness with higher number of Byzantine faults \cite{DLS88}.
 Some of the works however explore the concept of ``flexibility'' understood usually as providing the strongest $n/3$ security in the general partially synchronous model, and additional guarantees in case some additional conditions, such as network synchronicity or limited adversarial behavior, are met.
 
@@ -275,14 +271,14 @@ Gasper\cite{BHKPQRSWZ18}, the newly proposed candidate for Ethereum 2.0 consensu
 The snap-and-chat protocols define two ``levels of finality'' (formalized in the paper as two ledgers, one being an extension of another). The first one, faster, relies on the classical partially synchronous assumptions and is guaranteed to be live and safe as long as less than $n/3$ nodes are faulty. 
 The second level provides a stronger $n/2$ resilience against adversarial nodes, but is live only as long as the network is synchronous.
 As in practical deployment assuming network synchronicity requires rather pessimistic assumptions about network latency, the second finality can be assumed to progress significantly slower. 
-The provided construction is very modular and allow to use wide variety of protocols to provide for the first and second finality levels, and the consistency between both levels is guaranteed.
+The provided construction is very modular and allows to use a wide variety of protocols to provide for the first and second finality levels, and the consistency between both levels is guaranteed.
 
 Protocol that carries perhaps the most similarities with Highway when it comes to achieved security guarantees is Flexible BFT\cite{MNR19}.
 It defines the new type of faulty node, the alive-but-corrupt node, that fully cooperates with honest nodes unless it is able to perform a successful attack on protocol safety.
 Intuitively, it models the practical situation in which nodes without an explicit incentive do not cheat, as that would mean loosing rewards in the PoS system. 
 Similarly as in Highway, the protocol is able to tolerate much more adversarial nodes if they do not aim to merely break the liveness, but are interested only in breaking safety - the bounds match the bounds in our paper. 
 Flexible BFT also introduces, as the name suggests, certain flexibility for the nodes when it comes to choosing the parameters related to the finality - each of the nodes can have independent assumptions about number of faulty nodes of each kind, and it is guaranteed that two honest nodes with correct assumptions can't finalize competing blocks, and if all nodes have correct assumptions, the protocol will continue making progress.
-The biggest conceptual difference is that in Flexible BFT, assumptions held by nodes explicitly influence their behavior in the protocol, while in Highway the assumed confidence threshold influences only the local computations performed on the DAG which form is not influenced by specific choices of confidence thresholds made by validators. 
+The biggest conceptual difference is that in Flexible BFT, assumptions held by nodes explicitly influence their behavior in the protocol, while in Highway the assumed confidence threshold influences only the local computations performed on the DAG whose form is not influenced by specific choices of confidence thresholds made by validators. 
 There are two main consequences of this difference. First, in Highway validators can update their confidence thresholds and they are able to recompute finality of all of the blocks without the need of communicating with other validators, while in case of Flexible BFT that would require rerunning the whole protocol. 
 Second, perhaps even more importantly, Flexible BFT can stall for everyone in case some of the honest validators incorrectly assume the number of faulty parties.
 In contrast, in Highway unit production never stalls, and the consensus may stall from the perspective of a given validator only if that specific validator made incorrect assumptions on the number of faulty parties.
@@ -307,11 +303,11 @@ We say that a block $B_1$ is a descendant of $B_2$ and write $B_2\leq B_1$ in ca
 
 In the Highway protocol, validators exchange messages in order to reach consensus on proposed blocks and hence validate one of possibly many branches of the produced blockchain.
 %
-As a way of capturing and spreading the different validators' knowledge about the already existing messages, it adopts the DAG framework~\cite{moser1999byzantine,zamfir2018casper,baird2016hashgraph,GLSS19}, in which every message broadcast by a validator refers a certain set of  messages sent by validators before.
+As a way of capturing and spreading the different validators' knowledge about the already existing messages, it adopts the DAG framework~\cite{baird2016hashgraph,GLSS19,moser1999byzantine,zamfir2018casper}, in which every message broadcast by a validator refers a certain set of  messages sent by validators before.
 %
 We will refer to such messages broadcast during normal protocol operation as \emph{units}, and the included references as \emph{citations}. More formally, each unit consists of the following data
 \begin{itemize}
-    \item {\bf Sender.} The index of the unit's sender (creator).
+    \item {\bf Sender.} The ID of the unit's sender (creator).
     \item {\bf Citations.} A list of hashes of other units that the creator wants to attest to. 
     \item {\bf Block.} In case a unit is produced by the validator appointed to produce a block at a given time, it is included in the unit. 
 \end{itemize}
@@ -359,7 +355,7 @@ For a given set of units $\cS$ we denote the set of proven equivocators below it
 We also denote the set of latest messages under a unit $u$ produced by honest (so far) validators as 
 $$L(u) \defeq \{v\in D(u) \mid \cS(v)\notin E(\{u\}) \text{ and } v'>v \!\Rightarrow\! \cS(v')\neq \cS(v) \text{ for every } v'\in D(u)\}.$$
 
-\subsection{Voting via the GHOST rule}
+\subsection{Voting via the GHOST Rule}
 In this section we introduce the GHOST (Greedy Heaviest Observed Sub-Tree) rule for fork selection in blockchains and explain how one can concretely implement it using an idea called virtual voting in the DAG.
 
 \paragraph{The GHOST rule.}
@@ -395,7 +391,7 @@ Having the block tree and opinions we are ready to define the GHOST rule.
 \end{enumerate}
 }
 
-For brevity we write $\ghost(\cB, \opinion)$ to be the block resulting from applying the ghost rule to the tree of blocks $\cB$ using the $\opinion:\cV \to \cB$.
+For brevity we write $\ghost(\cB, \opinion)$ to be the block resulting from applying the GHOST rule to the tree of blocks $\cB$ using the $\opinion:\cV \to \cB$.
 
 \paragraph{Virtual Voting using the DAG.}
 
@@ -440,7 +436,7 @@ Instead, each validator maintains for every block a confidence parameter that in
 As we explain in the next section, this confidence parameter is proportional to how many validators would need to equivocate their units, in order to revert a given block.
 
 
-\subsection{Finality condition}\label{sec:finality}
+\subsection{Finality Condition}\label{sec:finality}
 
 Having defined the DAG and voting mechanism, we are ready to introduce the rules of finalizing blocks in the Highway protocol.
 By taking advantage of the DAG framework, validators are able to compute finality of each block performing only local operations, namely searching for specific structures in their local copy of the DAG. 
@@ -892,7 +888,7 @@ In particular, we will want to know that these votes are not themselves equivoca
 We resolve this by introducing a system of endorsements.
 
 
-\subsubsection{Spam Prevention using Endorsements}\label{sec:endorse}
+\subsubsection{Spam Prevention Using Endorsements}\label{sec:endorse}
 We note that one equivocating validator $A\in \cV$ might send equivocating units to each of the other $n-1$ validators and if they do not coordinate about which units to include in their next downset, then all these may end up part of the DAG, and thus each honest validator will be forced to include $\Omega(n)$ chains of units from $A$ in order to incorporate each others' units.
 %
 Thus, as long as we do not want to coordinate between validators the inclusion of every single unit in the DAG, then we must accept that $\Omega(n)$ chains per validator (in case it equivocates) is the best we can hope for.
@@ -1069,7 +1065,7 @@ To guarantee the above condition the simplest (but perhaps not the most efficien
 Various more efficient strategies here are possible, we discuss some more practical approaches to endorsements in Section~\ref{sec:practical}.
 
 
-\section{Practical considerations}\label{sec:practical}
+\section{Practical Considerations}\label{sec:practical}
 \subsection{Dynamic Round Lengths}
 When defining the base version of our protocol we divided the time into fixed length rounds.
 %
